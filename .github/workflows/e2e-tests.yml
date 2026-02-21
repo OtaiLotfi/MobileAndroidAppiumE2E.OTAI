@@ -49,25 +49,21 @@ jobs:
         run: npx appium driver install uiautomator2
 
       - name: Run E2E tests
+        env:
+          ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL: 1
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
           target: google_apis
           arch: x86_64
           profile: pixel_7
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot-save -noaudio -no-boot-anim
           disable-animations: true
           script: |
             adb install app/mda-2.2.0-25.apk
             npx appium --relaxed-security &
-            APPIUM_PID=$!
             sleep 10
             robot --outputdir results tests/
-            kill $APPIUM_PID || true
-            adb emu kill || true
-            sleep 5
-            pkill -9 -f qemu-system || true
-            pkill -9 -f emulator || true
 
       - name: Upload test results
         if: always()
