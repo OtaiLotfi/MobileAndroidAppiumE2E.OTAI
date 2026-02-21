@@ -64,6 +64,7 @@ jobs:
             npx appium --relaxed-security &
             sleep 10
             robot --outputdir results tests/
+            adb emu kill 2>/dev/null; sleep 3; kill -9 $(pgrep qemu-system) 2>/dev/null; true
 
       - name: Upload test results
         if: always()
