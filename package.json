@@ -1,0 +1,15 @@
+{
+  "name": "mobileandroidappiume2e.otai",
+  "version": "1.0.0",
+  "description": "Android mobile E2E automation with Appium and Robot Framework",
+  "scripts": {
+    "appium": "appium --relaxed-security",
+    "test": "robot --outputdir results tests/"
+  },
+  "keywords": ["appium", "robot-framework", "android", "e2e", "automation"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "appium": "^2.17.1"
+  }
+}

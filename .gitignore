@@ -1,0 +1,35 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Node
+node_modules/
+
+# Robot Framework results
+results/
+output.xml
+log.html
+report.html
+screenshots/
+
+# IDE
+.idea/
+.vscode/
+.cursor/
+*.code-workspace
+
+# Environment / secrets
+.env
+.env.*
+
+# Logs
+*.log
+
+# Docs
+README.md
+
+# OS
+Thumbs.db
+.DS_Store
