@@ -62,6 +62,7 @@ jobs:
             npx appium --relaxed-security &
             sleep 10
             robot --outputdir results tests/
+            adb emu kill
 
       - name: Upload test results
         if: always()
