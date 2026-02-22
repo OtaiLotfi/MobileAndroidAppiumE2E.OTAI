@@ -1,36 +1,21 @@
 *** Settings ***
-Resource    ${CURDIR}${/}..${/}resources${/}common.resource
-
-Test Setup       Open Test Application
+Resource         ../resources/indexer.robot
+Test Setup       Run Keywords  Open Test Application   The application is launched   The app content should be visible
 Test Teardown    Close Test Application
+Test Tags        login
 
 *** Test Cases ***
 User Should Be Able To Login Successfully
     [Documentation]    Verify login flow with valid credentials
-    Wait Until Page Contains Element    accessibility_id=View menu    timeout=20s
-    Click Element    accessibility_id=View menu
-    Wait Until Page Contains Element    xpath=//*[@text="Log In"]    timeout=10s
-    Click Element    xpath=//*[@text="Log In"]
-    Wait Until Page Contains Element    xpath=//*[contains(@resource-id,'nameET')]    timeout=10s
-    Click Element    xpath=//*[contains(@resource-id,'nameET')]
-    Input Text    xpath=//*[contains(@resource-id,'nameET')]    bod@example.com
-    Click Element    xpath=//*[contains(@resource-id,'passwordET')]
-    Input Text    xpath=//*[contains(@resource-id,'passwordET')]    10203040
-    Hide Keyboard
-    Click Element    xpath=//*[contains(@resource-id,'loginBtn')] 
-    Wait Until Page Contains    Products    timeout=15s
-    Log    Login successful - Products page is displayed
+    [Tags]    LotfiOTAI-001
+    Given the user is on the login page
+    When the user enters credentials    ${VALID_USERNAME}    ${VALID_PASSWORD}
+    Then the Products page should be displayed
 
 User Should Not Be Able To Login Successfully
     [Documentation]    Verify login flow with invalid credentials
-    Wait Until Page Contains Element    accessibility_id=View menu    timeout=20s
-    Click Element    accessibility_id=View menu
-    Wait Until Page Contains Element    xpath=//*[@text="Log In"]    timeout=10s
-    Click Element    xpath=//*[@text="Log In"]
-    Wait Until Page Contains Element    xpath=//*[contains(@resource-id,'nameET')]    timeout=10s
-    Click Element    xpath=//*[contains(@resource-id,'nameET')]
-    Input Text    xpath=//*[contains(@resource-id,'nameET')]    invalid@example.com
-    Click Element    xpath=//*[contains(@resource-id,'passwordET')]
-    Input Text    xpath=//*[contains(@resource-id,'passwordET')]    wrongpassword
-    Hide Keyboard
-    Click Element    xpath=//*[contains(@resource-id,'loginBtn')] 
+    [Tags]    LotfiOTAI-002
+    Given the user is on the login page
+    When the user enters credentials    ${INVALID_USERNAME}    ${INVALID_PASSWORD}
+    And the user taps the login button
+    Then the Products page should not be displayed

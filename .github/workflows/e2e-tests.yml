@@ -63,7 +63,7 @@ jobs:
             adb install app/mda-2.2.0-25.apk
             npx appium --relaxed-security &
             sleep 10
-            robot --outputdir results tests/; ROBOT_EXIT=$?; adb emu kill 2>/dev/null; sleep 3; kill -9 $(pgrep qemu-system) 2>/dev/null; kill -9 $(pgrep crashpad_handler) 2>/dev/null; exit $ROBOT_EXIT
+            robot --variable VALID_USERNAME:${{ secrets.VALID_USERNAME }} --variable VALID_PASSWORD:${{ secrets.VALID_PASSWORD }} --outputdir results tests/; ROBOT_EXIT=$?; adb emu kill 2>/dev/null; sleep 3; kill -9 $(pgrep qemu-system) 2>/dev/null; kill -9 $(pgrep -f crashpad) 2>/dev/null; exit $ROBOT_EXIT
 
       - name: Upload test results
         if: always()
