@@ -60,6 +60,11 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot-save -noaudio -no-boot-anim
           disable-animations: true
           script: |
+            sleep 15
+            adb shell input keyevent KEYCODE_HOME
+            adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS
+            adb shell settings put global hidden_api_policy 1
+            sleep 5
             adb install app/mda-2.2.0-25.apk
             npx appium --relaxed-security &
             sleep 10
