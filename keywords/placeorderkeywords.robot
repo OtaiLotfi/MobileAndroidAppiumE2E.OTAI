@@ -2,7 +2,6 @@
 Library    AppiumLibrary
 Library    ../resources/locators/commonlocators.py
 Resource   ../resources/constants.resource
-Resource   ../keywords/basepagekeywords.robot
 
 *** Variables ***
 ${PLUS_BUTTON_id}                     plusIV

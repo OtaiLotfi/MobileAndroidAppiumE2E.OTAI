@@ -2,7 +2,6 @@
 Library    AppiumLibrary
 Library    ../resources/locators/commonlocators.py
 Variables    ../resources/config/credentials.py
-Resource   ../keywords/basepagekeywords.robot
 
 *** Variables ***
 ${LOGIN_MENU_ITEM_text}             Log In
