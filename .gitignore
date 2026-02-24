@@ -30,6 +30,9 @@ screenshots/
 # Docs
 README.md
 
+# ADB dumps
+ui_dump.xml
+
 # OS
 Thumbs.db
 .DS_Store

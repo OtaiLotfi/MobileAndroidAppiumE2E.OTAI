@@ -1,12 +1,12 @@
 *** Settings ***
 Library    AppiumLibrary
-Library    fragmentspage/commonlocators.py
+Library    ../resources/locators/commonlocators.py
 
 *** Variables ***
 ${PRODUCT_TITLE_id}      productTV
 ${PRODUCT_PRICE-id}      priceTV
 ${PRODUCT_IMAGE-id}      productIV
-${PRODUCT_IMAGE}         xpath=(//android.widget.ImageView[@content-desc="Product Image"])[1]
+${PRODUCT_IMAGE}         xpath=(//android.widget.ImageView[@content-desc="Product Image"])[3]
 ${TIMEOUT}               20s
 
 *** Keywords ***
@@ -30,7 +30,8 @@ The user taps on a product
     Click Element    ${PRODUCT_IMAGE}
 
 The product detail screen should be displayed
-    Wait Until Page Contains Element    id=com.saucelabs.mydemoapp.android:id/productTV    timeout=${TIMEOUT}
+    ${PRODUCT_TITLE}=    Get Element By Id    ${PRODUCT_TITLE_id}
+    Wait Until Page Contains Element    ${PRODUCT_TITLE}    timeout=${TIMEOUT}
     Log    Product detail screen opened successfully
 
 The user navigates back

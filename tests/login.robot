@@ -1,5 +1,5 @@
 *** Settings ***
-Resource         ../resources/indexer.robot
+Resource         ../resources/indexer.resource
 Test Setup       Run Keywords  Open Test Application   The application is launched   The app content should be visible
 Test Teardown    Close Test Application
 Test Tags        login
