@@ -165,7 +165,7 @@ def main():
         "duration": parse_elapsed(total_elapsed),
     }
     run_history.append(current_run)
-    run_history = run_history[-30:]
+    run_history = run_history[-20:]
     run_history_path.write_text(json.dumps(run_history, indent=2), encoding="utf-8")
 
     report = {

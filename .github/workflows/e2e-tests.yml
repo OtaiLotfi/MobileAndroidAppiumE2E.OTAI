@@ -75,6 +75,11 @@ jobs:
             sleep 10
             robot --variable VALID_USERNAME:${{ secrets.VALID_USERNAME }} --variable VALID_PASSWORD:${{ secrets.VALID_PASSWORD }} --outputdir results tests/; ROBOT_EXIT=$?; adb emu kill 2>/dev/null; sleep 3; kill -9 $(pgrep qemu-system) 2>/dev/null; kill -9 $(pgrep -f '[c]rashpad') 2>/dev/null; exit $ROBOT_EXIT
 
+      - name: Restore run history
+        if: always()
+        run: |
+          curl -sSf https://otailotfi.github.io/MobileAndroidAppiumE2E.OTAI/run_history.json -o dashboard/run_history.json || echo "[]" > dashboard/run_history.json
+
       - name: Generate dashboard report
         if: always()
         run: python dashboard/generate_report.py
@@ -104,6 +109,7 @@ jobs:
           mkdir -p _site
           cp dashboard/index.html _site/
           cp dashboard/report_data.json _site/ 2>/dev/null || true
+          cp dashboard/run_history.json _site/ 2>/dev/null || true
           cp dashboard/dashboard-logo.svg _site/
           cp dashboard/login-logo.svg _site/
           cp dashboard/owner-photo.png _site/
