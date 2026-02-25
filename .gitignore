@@ -33,6 +33,10 @@ README.md
 # ADB dumps
 ui_dump.xml
 
+# Dashboard generated files
+dashboard/report_data.json
+dashboard/run_history.json
+
 # OS
 Thumbs.db
 .DS_Store

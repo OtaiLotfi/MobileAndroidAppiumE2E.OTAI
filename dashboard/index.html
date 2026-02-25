@@ -1,0 +1,1793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Automation Test Reporting Dashboard – Mobile Android E2E</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: #f0f4f8;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 20% 60%, rgba(59, 130, 246, 0.04) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 80% at 80% 20%, rgba(29, 78, 216, 0.03) 0%, transparent 60%),
+        linear-gradient(180deg, #edf2f7 0%, #f0f4f8 40%, #f7f9fc 100%);
+      background-attachment: fixed;
+      color: #1d1d1f;
+      min-height: 100vh;
+    }
+    .header {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 28px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8faff 100%);
+      border-bottom: 1px solid rgba(59, 130, 246, 0.12);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(59, 130, 246, 0.04);
+      flex-wrap: wrap;
+      gap: 16px;
+      overflow: visible;
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #1d4ed8 0%, #3b82f6 40%, #93c5fd 70%, #bfdbfe 100%);
+      opacity: 0.95;
+    }
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      min-width: 0;
+    }
+    .header-logo {
+      height: 44px;
+      width: auto;
+      display: block;
+      flex-shrink: 0;
+    }
+    .header-brand-divider {
+      width: 2px;
+      height: 32px;
+      background: linear-gradient(180deg, transparent, #3b82f6 20%, #93c5fd 50%, #3b82f6 80%, transparent);
+      margin: 0 20px;
+      flex-shrink: 0;
+      border-radius: 2px;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.3;
+      padding-top: 2px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .title-auto {
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .header-brand .header-title { white-space: nowrap; }
+    @media (max-width: 900px) {
+      .header { padding: 18px 20px; }
+      .header-brand .header-title { white-space: normal; }
+      .header-brand-divider { height: 26px; margin: 0 14px; }
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .search {
+      padding: 8px 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      width: 220px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .search:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+    }
+    .project-select { padding: 8px 12px; border: 1px solid #d2d2d7; border-radius: 8px; font-size: 14px; background: #fff; cursor: pointer; }
+    @keyframes shimmer {
+      0% { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+    @keyframes pulse-ring {
+      0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.35); }
+      70% { box-shadow: 0 0 0 6px rgba(59, 130, 246, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+    }
+    .project-chip {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 20px 9px 14px;
+      border-radius: 50px;
+      background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 45%, #3b82f6 100%);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+      cursor: default;
+      user-select: none;
+      overflow: hidden;
+      animation: pulse-ring 3s ease-out infinite;
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+    }
+    .project-chip::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 40%, rgba(255,255,255,0.25) 50%, rgba(255,255,255,0.12) 60%, transparent 100%);
+      background-size: 200% 100%;
+      animation: shimmer 3s ease-in-out infinite;
+      pointer-events: none;
+    }
+    .project-chip:hover {
+      transform: translateY(-1px) scale(1.03);
+      box-shadow: 0 6px 24px rgba(59, 130, 246, 0.35), 0 0 0 2px rgba(147, 197, 253, 0.25);
+      animation: none;
+    }
+    .project-chip-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(4px);
+      flex-shrink: 0;
+    }
+    .project-chip-icon svg { display: block; }
+    .project-chip-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #34d399;
+      box-shadow: 0 0 6px rgba(52, 211, 153, 0.6);
+      flex-shrink: 0;
+      margin-left: 2px;
+    }
+    .logout-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 9px 16px; margin-left: 16px;
+      border: 1px solid #bfdbfe; border-radius: 8px;
+      background: transparent; color: #1d4ed8; font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s ease; white-space: nowrap;
+    }
+    .logout-btn:hover { background: rgba(29, 78, 216, 0.08); border-color: #3b82f6; box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15); }
+    .logout-btn .logout-icon { flex-shrink: 0; opacity: 0.9; }
+    .layout { display: flex; min-height: calc(100vh - 72px); }
+    .section-api-tag {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      padding: 5px 12px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #1e3a5f;
+      background: linear-gradient(135deg, rgba(96, 165, 250, 0.2) 0%, rgba(59, 130, 246, 0.12) 100%);
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(29, 78, 216, 0.08);
+      z-index: 2;
+    }
+    .sidebar {
+      width: 340px;
+      min-width: 340px;
+      background: linear-gradient(180deg, #f8faff 0%, #ffffff 60%, #f8faff 100%);
+      border-right: 1px solid #e2e8f0;
+      padding: 24px;
+      overflow-y: auto;
+      position: relative;
+    }
+    .sidebar h3 { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #64748b; font-weight: 600; margin: 20px 0 10px; padding-bottom: 6px; border-bottom: 1px solid #f1f5f9; }
+    .sidebar h3:first-child { margin-top: 0; }
+    /* TESTS section: premium label */
+    #tests-list-container { margin-top: 4px; }
+    .sidebar h3.tests-section-title {
+      font-size: 13px; text-transform: uppercase; letter-spacing: 0.12em; color: #1e3a5f;
+      font-weight: 700; margin: 28px 0 16px; padding-bottom: 12px;
+      border-bottom: none;
+      position: relative;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .sidebar h3.tests-section-title:first-of-type { margin-top: 0; }
+    .sidebar h3.tests-section-title::after {
+      content: ''; position: absolute; left: 0; bottom: 0; height: 3px; width: 42px;
+      background: linear-gradient(90deg, #3b82f6 0%, #93c5fd 100%); border-radius: 2px;
+    }
+    .suite-section { margin-bottom: 14px; }
+    .suite-section-header {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 16px 18px; border-radius: 12px;
+      background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+      color: #1e3a5f; font-size: 14px; font-weight: 700; cursor: pointer; user-select: none;
+      border: 1px solid #dbeafe;
+      box-shadow: 0 1px 3px rgba(59, 130, 246, 0.06);
+      transition: box-shadow 0.25s ease, transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+      letter-spacing: 0.02em;
+    }
+    .suite-section-header:hover {
+      border-color: #bfdbfe;
+      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.12);
+      transform: translateY(-1px);
+      background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);
+    }
+    .suite-section-header:active { transform: translateY(0); }
+    .suite-section-header .chevron {
+      transition: transform 0.25s ease; color: #3b82f6; font-size: 18px; font-weight: 600; opacity: 0.95;
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 24px; height: 24px; flex-shrink: 0;
+    }
+    .suite-section-header.expanded {
+      background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+      color: #fff; border-color: transparent;
+      box-shadow: 0 4px 14px rgba(29, 78, 216, 0.25);
+      border-radius: 12px 12px 0 0;
+    }
+    .suite-section-header.expanded .chevron { transform: rotate(90deg); color: #fff; opacity: 1; }
+    .suite-section-header .section-count {
+      font-weight: 700; font-size: 13px;
+      background: rgba(59, 130, 246, 0.12); color: #1d4ed8;
+      padding: 6px 12px; border-radius: 20px; letter-spacing: 0.02em;
+    }
+    .suite-section-header.expanded .section-count {
+      background: rgba(255, 255, 255, 0.25); color: #fff;
+    }
+    .suite-section-tests {
+      margin-top: 0; padding: 16px 18px 16px 20px;
+      border: 1px solid #dbeafe; border-top: none;
+      border-radius: 0 0 12px 12px;
+      background: #ffffff;
+      border-left: 4px solid #93c5fd;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.04);
+    }
+    #tests-list .suite-section-tests {
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    }
+    .suite-section-tests.hidden { display: none; }
+    .suite-section-tests.scrollable { max-height: 220px; overflow-y: scroll; scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: #bfdbfe #eff6ff; }
+    .suite-section-tests.scrollable::-webkit-scrollbar { width: 8px; }
+    .suite-section-tests.scrollable::-webkit-scrollbar-track { background: #eff6ff; border-radius: 4px; }
+    .suite-section-tests.scrollable::-webkit-scrollbar-thumb { background: #93c5fd; border-radius: 4px; }
+    .suite-section-tests.scrollable::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
+    /* Passes section: between TESTS and Failures */
+    .sidebar h3.passes-section-title {
+      font-size: 13px; text-transform: uppercase; letter-spacing: 0.12em; color: #047857;
+      font-weight: 700; margin: 28px 0 16px; padding-bottom: 12px;
+      border-bottom: none; position: relative;
+    }
+    .sidebar h3.passes-section-title::after {
+      content: ''; position: absolute; left: 0; bottom: 0; height: 3px; width: 42px;
+      background: linear-gradient(90deg, #059669 0%, #34d399 100%); border-radius: 2px;
+    }
+    .passes-section-header {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 16px 18px; border-radius: 12px;
+      background: linear-gradient(135deg, #ffffff 0%, #ecfdf5 100%);
+      color: #047857; font-size: 14px; font-weight: 700; cursor: pointer; user-select: none;
+      border: 1px solid #a7f3d0;
+      box-shadow: 0 1px 3px rgba(5, 150, 105, 0.06);
+      transition: box-shadow 0.25s ease, transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+      letter-spacing: 0.02em;
+    }
+    .passes-section-header:hover {
+      border-color: #6ee7b7;
+      box-shadow: 0 4px 16px rgba(5, 150, 105, 0.12);
+      transform: translateY(-1px);
+      background: linear-gradient(135deg, #ffffff 0%, #d1fae5 100%);
+    }
+    .passes-section-header.expanded {
+      background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+      color: #fff; border-color: transparent;
+      box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);
+      border-radius: 12px 12px 0 0;
+    }
+    .passes-section-header .chevron {
+      transition: transform 0.25s ease; color: #059669; font-size: 18px; font-weight: 600; opacity: 0.95;
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 24px; height: 24px; flex-shrink: 0;
+    }
+    .passes-section-header.expanded .chevron { transform: rotate(90deg); color: #fff; opacity: 1; }
+    .passes-section-header .section-count {
+      font-weight: 700; font-size: 13px;
+      background: rgba(5, 150, 105, 0.12); color: #047857;
+      padding: 6px 12px; border-radius: 20px; letter-spacing: 0.02em;
+    }
+    .passes-section-header.expanded .section-count {
+      background: rgba(255, 255, 255, 0.25); color: #fff;
+    }
+    #passes-list .suite-section-tests {
+      background: linear-gradient(180deg, #ffffff 0%, #ecfdf5 100%);
+      border-color: #a7f3d0; border-left-color: #34d399;
+    }
+    /* Failures section: premium label + header */
+    .sidebar h3.failures-section-title {
+      font-size: 13px; text-transform: uppercase; letter-spacing: 0.12em; color: #991b1b;
+      font-weight: 700; margin: 28px 0 16px; padding-bottom: 12px;
+      border-bottom: none; position: relative;
+    }
+    .sidebar h3.failures-section-title::after {
+      content: ''; position: absolute; left: 0; bottom: 0; height: 3px; width: 42px;
+      background: linear-gradient(90deg, #dc2626 0%, #f87171 100%); border-radius: 2px;
+    }
+    .failures-section-header {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 16px 18px; border-radius: 12px;
+      background: linear-gradient(135deg, #ffffff 0%, #fff5f5 100%);
+      color: #991b1b; font-size: 14px; font-weight: 700; cursor: pointer; user-select: none;
+      border: 1px solid #fecaca;
+      box-shadow: 0 1px 3px rgba(185, 28, 28, 0.06);
+      transition: box-shadow 0.25s ease, transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+      letter-spacing: 0.02em;
+    }
+    .failures-section-header:hover {
+      border-color: #fca5a5;
+      box-shadow: 0 4px 16px rgba(185, 28, 28, 0.12);
+      transform: translateY(-1px);
+      background: linear-gradient(135deg, #ffffff 0%, #fef2f2 100%);
+    }
+    .failures-section-header:active { transform: translateY(0); }
+    .failures-section-header .chevron {
+      transition: transform 0.25s ease; color: #dc2626; font-size: 18px; font-weight: 600; opacity: 0.95;
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 24px; height: 24px; flex-shrink: 0;
+    }
+    .failures-section-header.expanded {
+      background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%);
+      color: #fff; border-color: transparent;
+      box-shadow: 0 4px 14px rgba(185, 28, 28, 0.25);
+      border-radius: 12px 12px 0 0;
+    }
+    .failures-section-header.expanded .chevron { transform: rotate(90deg); color: #fff; opacity: 1; }
+    .failures-section-header .section-count {
+      font-weight: 700; font-size: 13px;
+      background: rgba(220, 38, 38, 0.12); color: #b91c1c;
+      padding: 6px 12px; border-radius: 20px; letter-spacing: 0.02em;
+    }
+    .failures-section-header.expanded .section-count {
+      background: rgba(255, 255, 255, 0.25); color: #fff;
+    }
+    #failures-list .suite-section-tests {
+      background: linear-gradient(180deg, #ffffff 0%, #fef2f2 100%);
+      border-color: #fecaca; border-left-color: #f87171;
+    }
+    #failures-list .test-item.fail:hover {
+      background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+      border-color: #fca5a5;
+      box-shadow: 0 2px 8px rgba(185, 28, 28, 0.08);
+    }
+    /* Run Summary section: distinct from TESTS, white-led + softer blue */
+    .sidebar h3.run-summary-section-title {
+      font-size: 13px; text-transform: uppercase; letter-spacing: 0.12em; color: #2563eb;
+      font-weight: 700; margin: 28px 0 16px; padding-bottom: 12px;
+      border-bottom: none; position: relative;
+    }
+    .sidebar h3.run-summary-section-title::after {
+      content: ''; position: absolute; left: 0; bottom: 0; height: 3px; width: 42px;
+      background: linear-gradient(90deg, #93c5fd 0%, #bfdbfe 100%); border-radius: 2px;
+    }
+    .tests-info-section .tests-info-section-header {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 16px 18px; padding-left: 20px; border-radius: 12px;
+      background: #ffffff;
+      color: #2563eb; font-size: 14px; font-weight: 700; cursor: pointer; user-select: none;
+      border: 1px solid #dbeafe; border-left: 4px solid #bfdbfe;
+      box-shadow: 0 1px 2px rgba(59, 130, 246, 0.04);
+      transition: box-shadow 0.25s ease, transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+      letter-spacing: 0.02em;
+    }
+    .tests-info-section .tests-info-section-header:hover {
+      background: #fafbff;
+      border-color: #dbeafe; border-left-color: #93c5fd;
+      box-shadow: 0 2px 10px rgba(59, 130, 246, 0.08);
+      transform: translateY(-1px);
+    }
+    .tests-info-section .tests-info-section-header:active { transform: translateY(0); }
+    .tests-info-section .tests-info-section-header .chevron {
+      transition: transform 0.25s ease; color: #60a5fa; font-size: 18px; font-weight: 600; opacity: 0.95;
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 24px; height: 24px; flex-shrink: 0;
+    }
+    .tests-info-section .tests-info-section-header.expanded {
+      background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+      color: #fff; border-color: transparent; border-left: none;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.22);
+      border-radius: 12px 12px 0 0;
+    }
+    .tests-info-section .tests-info-section-header.expanded .chevron { transform: rotate(90deg); color: #fff; opacity: 1; }
+    .tests-info-section .tests-info-section-header .section-count {
+      font-weight: 700; font-size: 13px;
+      background: rgba(147, 197, 253, 0.2); color: #2563eb;
+      padding: 6px 12px; border-radius: 20px; letter-spacing: 0.02em;
+    }
+    .tests-info-section .tests-info-section-header.expanded .section-count {
+      background: rgba(255, 255, 255, 0.28); color: #fff;
+    }
+    .tests-info-section .suite-section-tests {
+      background: #fafbff;
+      border: 1px solid #dbeafe; border-top: none;
+      border-left: 3px solid #bfdbfe;
+      border-radius: 0 0 12px 12px;
+      box-shadow: 0 1px 4px rgba(59, 130, 246, 0.03);
+    }
+    .test-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 11px 14px; border-radius: 10px; margin-bottom: 6px; font-size: 14px;
+      cursor: pointer; gap: 8px; transition: background 0.2s ease, box-shadow 0.2s ease;
+      border: 1px solid transparent; background: #fff;
+    }
+    #tests-list .test-item { background: #fff; border-color: #eff6ff; }
+    #tests-list .test-item:hover { background: #f0f7ff; border-color: #dbeafe; box-shadow: 0 1px 4px rgba(59, 130, 246, 0.08); }
+    #tests-list .test-item.pass {
+      background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+      border-color: #a7f3d0;
+      box-shadow: 0 1px 3px rgba(5, 150, 105, 0.08);
+    }
+    #tests-list .test-item.pass:hover {
+      background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+      border-color: #6ee7b7;
+      box-shadow: 0 2px 8px rgba(5, 150, 105, 0.12);
+    }
+    #tests-list .test-item.fail { background: #fff5f5; border-color: #fecaca; }
+    .test-item-title { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+    .test-tag { font-size: 11px; color: #6b7280; }
+    .pill { font-size: 11px; padding: 3px 9px; border-radius: 20px; font-weight: 600; letter-spacing: 0.02em; }
+    .pill.pass { background: linear-gradient(135deg, #a7f3d0 0%, #6ee7b7 100%); color: #065f46; box-shadow: 0 1px 2px rgba(5, 150, 105, 0.2); }
+    .pill.fail { background: #fee2e2; color: #991b1b; }
+    .pill.skip { background: #fef3c7; color: #b45309; }
+    .login-overlay { position: fixed; inset: 0; z-index: 1100; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; box-sizing: border-box; overflow: hidden; background: linear-gradient(155deg, #0c2556 0%, #1d4ed8 35%, #2563eb 55%, #3b82f6 78%, #0f172a 100%); }
+    .login-overlay.hidden { display: none; }
+    .login-overlay::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 85% 65% at 12% 18%, rgba(255,255,255,0.14) 0%, transparent 52%), radial-gradient(ellipse 65% 85% at 88% 82%, rgba(255,255,255,0.08) 0%, transparent 50%); pointer-events: none; }
+    .login-overlay::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 120% 120% at 50% 50%, transparent 35%, rgba(0,0,0,0.18) 100%); pointer-events: none; }
+    .login-overlay .login-profile,
+    .login-overlay .login-box { position: relative; z-index: 1; }
+    .login-profile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 28px;
+    }
+    .login-profile-photo {
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: center top;
+      border: 3px solid rgba(255, 255, 255, 0.5);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      margin-bottom: 14px;
+    }
+    .login-profile-name {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.01em;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+    }
+    .login-profile-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      color: rgba(255, 255, 255, 0.75);
+      margin-top: 4px;
+      text-transform: uppercase;
+    }
+    .login-box {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+      padding: 36px 40px 40px;
+      width: 100%;
+      max-width: 400px;
+      box-sizing: border-box;
+      text-align: center;
+    }
+    .login-logo-wrap { margin: 0 0 12px; width: 100%; display: grid; place-items: center; }
+    .login-logo { height: 44px; width: auto; }
+    .login-brand-text {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #1e3a5f;
+      margin-bottom: 6px;
+    }
+    .login-subtitle {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 28px;
+      font-weight: 500;
+    }
+    .login-box .form-group { margin-bottom: 20px; text-align: left; }
+    .login-box label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: #1e3a5f;
+      margin-bottom: 6px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .login-box input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 14px;
+      box-sizing: border-box;
+      background: #f8fafc;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+    .login-box input::placeholder { color: #94a3b8; }
+    .login-box input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+      background: #fff;
+    }
+    .login-box button {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: box-shadow 0.2s ease, transform 0.15s ease;
+    }
+    .login-box button:hover {
+      box-shadow: 0 4px 14px rgba(29, 78, 216, 0.4);
+      transform: translateY(-1px);
+    }
+    .login-box button:active { transform: translateY(0); }
+    .login-box .login-error { color: #dc2626; font-size: 13px; margin: 12px 0 0; }
+    .test-detail-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; align-items: center; justify-content: center; padding: 24px; box-sizing: border-box; }
+    .test-detail-overlay.open { display: flex; }
+    .test-detail-modal { background: rgba(255, 255, 255, 0.97); backdrop-filter: blur(16px); border-radius: 20px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(255, 255, 255, 0.2) inset; max-width: 640px; width: 100%; max-height: 85vh; overflow: hidden; display: flex; flex-direction: column; border: 1px solid rgba(226, 232, 240, 0.6); }
+    .test-detail-modal.pass { border-color: #059669; }
+    .test-detail-modal.pass h2, .test-detail-modal.pass .test-detail-body { color: #065f46; }
+    .test-detail-modal.pass .test-detail-info .detail-row .k { color: #047857; }
+    .test-detail-modal.pass .test-detail-tabs button { color: #065f46; }
+    .test-detail-modal.pass .test-detail-tabs button.active { border-bottom-color: #059669; color: #047857; }
+    .test-detail-modal.fail { border-color: #dc2626; }
+    .test-detail-modal.fail h2, .test-detail-modal.fail .test-detail-body { color: #991b1b; }
+    .test-detail-modal.fail .test-detail-info .detail-row .k { color: #b91c1c; }
+    .test-detail-modal.fail .test-detail-tabs button { color: #991b1b; }
+    .test-detail-modal.fail .test-detail-tabs button.active { border-bottom-color: #dc2626; color: #b91c1c; }
+    .test-detail-modal.skip { border-color: #DDA32E; }
+    .test-detail-modal.skip h2, .test-detail-modal.skip .test-detail-body { color: #b45309; }
+    .test-detail-modal.skip .test-detail-info .detail-row .k { color: #d97706; }
+    .test-detail-modal.skip .test-detail-tabs button { color: #b45309; }
+    .test-detail-modal.skip .test-detail-tabs button.active { border-bottom-color: #DDA32E; color: #d97706; }
+    .test-detail-modal h2 { margin: 0 0 12px; font-size: 1.1rem; color: #1e293b; padding-right: 32px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .test-detail-tag-pill { display: inline-block; background: #059669; color: #fff; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 6px; white-space: nowrap; }
+    .test-detail-modal.pass .test-detail-tag-pill { background: #059669; color: #fff; }
+    .test-detail-modal.fail .test-detail-tag-pill { background: #dc2626; color: #fff; }
+    .test-detail-modal.skip .test-detail-tag-pill { background: #DDA32E; color: #fff; }
+    .test-detail-close { position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; border: none; background: #f1f5f9; border-radius: 8px; cursor: pointer; font-size: 18px; line-height: 1; color: #64748b; }
+    .test-detail-close:hover { background: #e2e8f0; color: #1e293b; }
+    .test-detail-header { padding: 20px 20px 0; position: relative; border-bottom: 1px solid #e2e8f0; }
+    .test-detail-tabs { display: flex; gap: 4px; padding: 0 20px; margin-top: 16px; border-bottom: 1px solid #e2e8f0; }
+    .test-detail-tabs button { padding: 10px 16px; border: none; background: none; font-size: 13px; font-weight: 500; color: #64748b; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+    .test-detail-tabs button:hover { color: #1e293b; }
+    .test-detail-tabs button.active { color: #1d4ed8; border-bottom-color: #1d4ed8; }
+    .test-detail-body { padding: 20px; overflow-y: auto; flex: 1; min-height: 0; }
+    .test-detail-panel { display: none; }
+    .test-detail-panel.active { display: block; }
+    .test-detail-info .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+    .test-detail-info .detail-row .k { color: #64748b; }
+    .test-detail-steps table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .test-detail-steps th, .test-detail-steps td { text-align: left; padding: 8px 12px; border-bottom: 1px solid #e2e8f0; }
+    .test-detail-steps th { color: #64748b; font-weight: 600; }
+    .test-detail-steps .step-pass { color: #059669; }
+    .test-detail-steps .step-fail { color: #dc2626; }
+    .test-detail-steps .step-row-clickable { cursor: pointer; transition: background 0.15s ease; }
+    .test-detail-steps .step-row-clickable:hover { background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); }
+    .test-detail-steps .step-row-clickable:active { background: #a7f3d0; }
+    .test-detail-steps .step-row-clickable td:first-of-type { padding-left: 12px; }
+    .call-chain-panel { margin-top: 20px; border-radius: 12px; overflow: hidden; border: 1px solid #a7f3d0; background: linear-gradient(180deg, #f0fdf4 0%, #ecfdf5 100%); box-shadow: 0 2px 12px rgba(5, 150, 105, 0.08); }
+    .call-chain-panel-head { padding: 12px 16px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #047857; border-bottom: 1px solid #a7f3d0; background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); display: flex; align-items: center; gap: 8px; }
+    .call-chain-panel-head::before { content: ''; width: 4px; height: 16px; border-radius: 2px; background: linear-gradient(180deg, #059669 0%, #10b981 100%); }
+    .call-chain-panel-body { padding: 16px; max-height: 280px; overflow-y: auto; }
+    .call-chain-tree { list-style: none; margin: 0; padding: 0; font-size: 13px; }
+    .call-chain-tree li { position: relative; padding: 6px 0 6px 20px; border-left: 2px solid #a7f3d0; margin-left: 8px; }
+    .call-chain-tree li:first-child { padding-top: 0; }
+    .call-chain-tree li:last-child { border-left-color: transparent; }
+    .call-chain-tree li::before { content: ''; position: absolute; left: -2px; top: 14px; width: 12px; height: 2px; background: #a7f3d0; }
+    .call-chain-tree > li:first-child::before { display: none; }
+    .call-chain-tree .chain-node { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .call-chain-tree .chain-node-name { font-weight: 600; color: #1e293b; }
+    .call-chain-tree .chain-node-status { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 6px; letter-spacing: 0.04em; }
+    .call-chain-tree .chain-node-status.pass { background: rgba(5, 150, 105, 0.15); color: #047857; }
+    .call-chain-tree .chain-node-status.fail { background: rgba(220, 38, 38, 0.12); color: #b91c1c; }
+    .call-chain-tree .chain-node-status.skip { background: rgba(221, 163, 46, 0.2); color: #b45309; }
+    .call-chain-tree .chain-node-elapsed { font-size: 12px; color: #64748b; }
+    .call-chain-leaf-msg { padding: 10px 16px; font-size: 13px; color: #64748b; font-style: italic; border-radius: 8px; background: rgba(5, 150, 105, 0.06); border: 1px dashed #6ee7b7; margin-top: 8px; }
+    /* Failed test: red step hover and call-chain panel */
+    .test-detail-modal.fail .test-detail-steps .step-row-clickable:hover { background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); }
+    .test-detail-modal.fail .test-detail-steps .step-row-clickable:active { background: #fecaca; }
+    .test-detail-modal.fail .call-chain-panel { border-color: #fecaca; background: linear-gradient(180deg, #fef2f2 0%, #fee2e2 100%); box-shadow: 0 2px 12px rgba(220, 38, 38, 0.08); }
+    .test-detail-modal.fail .call-chain-panel-head { color: #b91c1c; border-bottom-color: #fecaca; background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); }
+    .test-detail-modal.fail .call-chain-panel-head::before { background: linear-gradient(180deg, #dc2626 0%, #ef4444 100%); }
+    .test-detail-modal.fail .call-chain-tree li { border-left-color: #fecaca; }
+    .test-detail-modal.fail .call-chain-tree li::before { background: #fecaca; }
+    .test-detail-modal.fail .call-chain-leaf-msg { background: rgba(220, 38, 38, 0.06); border-color: #fca5a5; }
+    .test-detail-logs { font-family: ui-monospace, monospace; font-size: 12px; background: #f8fafc; border-radius: 8px; padding: 12px; max-height: 320px; overflow-y: auto; }
+    .test-detail-logs .log-line { padding: 4px 0; border-bottom: 1px solid #e2e8f0; }
+    .test-detail-logs .log-line:last-child { border-bottom: none; }
+    .test-detail-logs .log-level-WARN { color: #b45309; }
+    .test-detail-logs .log-level-ERROR, .test-detail-logs .log-level-FAIL { color: #dc2626; }
+    .test-detail-logs .log-level-INFO { color: #475569; }
+    .main { flex: 1; padding: 24px; overflow-y: auto; background: transparent; }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 18px;
+      margin-bottom: 28px;
+      position: relative;
+    }
+    .card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 14px;
+      padding: 22px 20px;
+      text-align: center;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(59, 130, 246, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(8px);
+    }
+    .card::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 50%;
+      pointer-events: none;
+      border-radius: 0 0 14px 14px;
+    }
+    .card.pass::after { background: linear-gradient(to top, rgba(5, 150, 105, 0.08), transparent); }
+    .card.fail::after { background: linear-gradient(to top, rgba(220, 38, 38, 0.08), transparent); }
+    .card.skip::after { background: linear-gradient(to top, rgba(221, 163, 46, 0.08), transparent); }
+    .card { background: rgba(255, 255, 255, 0.85); }
+    .card .value { position: relative; z-index: 1; font-size: 2rem; font-weight: 700; line-height: 1.2; }
+    .card .label { position: relative; z-index: 1; font-size: 12px; color: #64748b; margin-top: 6px; font-weight: 500; }
+    .card.pass .value { color: #059669; }
+    .card.fail .value { color: #dc2626; }
+    .card.skip .value { color: #DDA32E; }
+    .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    @media (max-width: 900px) { .content-grid { grid-template-columns: 1fr; } }
+    /* Suite / Run overview card: professional run metadata panel */
+    .suite-info {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      padding: 0;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 20px rgba(59, 130, 246, 0.06);
+      border: 1px solid rgba(219, 234, 254, 0.8);
+      overflow: hidden;
+      position: relative;
+    }
+    .suite-info::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 4px;
+      background: linear-gradient(90deg, #1d4ed8 0%, #3b82f6 50%, #93c5fd 100%);
+    }
+    .suite-info .suite-info-head {
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid #eff6ff;
+    }
+    .suite-info .suite-info-head h2 {
+      margin: 0;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: #2563eb;
+    }
+    .suite-info .suite-info-owner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 20px;
+      background: linear-gradient(135deg, #f8fbff 0%, #f0f7ff 100%);
+      border-bottom: 1px solid #eff6ff;
+    }
+    .suite-info .suite-info-owner .suite-logo {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: center top;
+      border: 2.5px solid #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15), 0 2px 8px rgba(0, 0, 0, 0.12);
+      flex-shrink: 0;
+      background: #f0f7ff;
+    }
+    .suite-info .suite-info-owner .owner-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #3b82f6;
+      margin-bottom: 2px;
+    }
+    .suite-info .suite-info-owner .owner-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1e3a5f;
+      letter-spacing: -0.02em;
+    }
+    .suite-info .suite-info-body { padding: 8px 20px 16px; }
+    .suite-info .suite-info-group { margin-top: 12px; }
+    .suite-info .suite-info-group:first-child { margin-top: 0; }
+    .suite-info .suite-info-group-title {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #93c5fd;
+      margin-bottom: 8px;
+      padding-bottom: 4px;
+    }
+    .suite-info .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 4px;
+      transition: background 0.15s ease;
+    }
+    .suite-info .row:hover { background: #fafbff; }
+    .suite-info .row .key {
+      font-size: 12px;
+      font-weight: 600;
+      color: #64748b;
+      letter-spacing: 0.02em;
+    }
+    .suite-info .row .value {
+      font-weight: 700;
+      color: #1e293b;
+      letter-spacing: -0.01em;
+    }
+    .suite-info .row .value.highlight {
+      color: #1d4ed8;
+      background: linear-gradient(135deg, #f0f7ff 0%, #eff6ff 100%);
+      padding: 4px 12px;
+      border-radius: 8px;
+      border: 1px solid #dbeafe;
+    }
+    .suite-info .row-value-with-logo { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; color: #1e293b; }
+    .suite-info .suite-logo { height: 24px; width: 24px; display: block; vertical-align: middle; border-radius: 50%; object-fit: cover; object-position: center top; }
+    .history-chart-card {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 20px rgba(59, 130, 246, 0.06);
+      border: 1px solid rgba(219, 234, 254, 0.8);
+      min-height: 200px;
+      position: relative;
+      overflow: hidden;
+    }
+    .history-chart-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #1d4ed8 0%, #3b82f6 50%, #93c5fd 100%);
+      border-radius: 16px 16px 0 0;
+    }
+    .history-chart-head { margin-bottom: 20px; }
+    .history-chart-card h2 {
+      margin: 0;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: #2563eb;
+    }
+    .history-chart-subtitle {
+      display: block;
+      margin-top: 4px;
+      font-size: 11px;
+      color: #93c5fd;
+      font-weight: 500;
+    }
+    .history-chart-wrap { position: relative; height: 260px; }
+    .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px; }
+    @media (max-width: 700px) { .charts { grid-template-columns: 1fr; } }
+    .chart-card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); max-width: 320px; }
+    .charts .chart-card:first-child { max-width: 420px; min-height: 320px; }
+    .charts .chart-card:nth-child(2) { max-width: 420px; min-height: 320px; }
+    .chart-card h3 { margin: 0 0 16px; font-size: 1rem; text-align: center; }
+    .chart-card-summary {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 20px rgba(59, 130, 246, 0.06);
+      border: 1px solid rgba(219, 234, 254, 0.8);
+      position: relative;
+      overflow: hidden;
+    }
+    .chart-card-summary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #1d4ed8 0%, #3b82f6 50%, #93c5fd 100%);
+      border-radius: 16px 16px 0 0;
+    }
+    .chart-card-summary h3 {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: #2563eb;
+    }
+    .overview-list { list-style: none; padding: 0; margin: 0; }
+    .overview-list li { padding: 8px 10px; border-radius: 8px; margin-bottom: 4px; font-size: 13px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+    .overview-list li:hover { background: #eef4fb; }
+    .overview-list .count { font-size: 12px; color: #86868b; }
+    .test-info-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 14px; border-radius: 10px; margin-bottom: 6px; font-size: 13px;
+      background: #fff; border: 1px solid #eff6ff;
+      transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .tests-info-section .test-info-row:hover {
+      background: #f0f7ff; border-color: #bfdbfe;
+      box-shadow: 0 1px 4px rgba(147, 197, 253, 0.1);
+    }
+    .tests-info-section .test-info-row:first-child {
+      font-weight: 700; color: #2563eb;
+      background: #fff; border-color: #bfdbfe;
+      border-left: 3px solid #93c5fd;
+    }
+    .test-info-row .count {
+      font-size: 12px; font-weight: 600; color: #2563eb;
+      background: rgba(196, 181, 253, 0.25); padding: 4px 10px; border-radius: 20px;
+    }
+    .sidebar-filter-bar { margin-bottom: 20px; }
+    .sidebar-search-wrap {
+      display: flex; align-items: stretch;
+      border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; background: #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .sidebar-search-wrap:focus-within { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12); }
+    .sidebar-search-input { flex: 1; padding: 12px 16px; border: none; font-size: 14px; outline: none; min-width: 0; background: transparent; }
+    .sidebar-search-input::placeholder { color: #94a3b8; }
+    .filters-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 12px 18px; border: none; border-left: 1px solid rgba(255,255,255,0.2);
+      background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%); color: #fff;
+      font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap;
+      transition: background 0.2s ease, box-shadow 0.2s ease;
+    }
+    .filters-btn:hover { background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%); box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25); }
+    .filters-btn .caret { font-size: 12px; opacity: 0.95; transition: transform 0.2s ease; }
+    .filters-btn.open .caret { transform: rotate(180deg); }
+    .filters-dropdown {
+      display: none;
+      position: relative;
+      margin-top: 10px;
+      padding: 16px;
+      padding-top: 18px;
+      background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+      border: 1px solid #dbeafe;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(59, 130, 246, 0.1), 0 1px 0 rgba(255,255,255,0.8) inset;
+      overflow: hidden;
+    }
+    .filters-dropdown::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #1d4ed8 0%, #3b82f6 50%, #93c5fd 100%);
+      border-radius: 12px 12px 0 0;
+    }
+    .filters-dropdown.open { display: block; }
+    .filters-dropdown label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      margin-bottom: 2px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #1e3a5f;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background 0.15s ease;
+    }
+    .filters-dropdown label:hover {
+      background: rgba(59, 130, 246, 0.08);
+      color: #1d4ed8;
+    }
+    .filters-dropdown label:last-child { margin-bottom: 0; }
+    .filters-dropdown input {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      border-radius: 4px;
+      appearance: none;
+      -webkit-appearance: none;
+      background: #fff;
+    }
+    .filters-dropdown input.filter-suite { border: 2px solid #3b82f6; }
+    .filters-dropdown input.filter-suite:checked { background: #1d4ed8; border-color: #1d4ed8; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E"); background-size: 14px 14px; background-position: center; background-repeat: no-repeat; }
+    .filters-dropdown input[value="Passes"] { border: 2px solid #059669; }
+    .filters-dropdown input[value="Passes"]:checked { background: #059669; border-color: #059669; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E"); background-size: 14px 14px; background-position: center; background-repeat: no-repeat; }
+    .filters-dropdown input[value="Failures"] { border: 2px solid #dc2626; }
+    .filters-dropdown input[value="Failures"]:checked { background: #dc2626; border-color: #dc2626; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E"); background-size: 14px 14px; background-position: center; background-repeat: no-repeat; }
+  </style>
+</head>
+<body>
+
+  <div id="login-overlay" class="login-overlay">
+    <div class="login-profile">
+      <img src="owner-photo.png" alt="Lotfi OTAI" class="login-profile-photo" />
+      <div class="login-profile-name">Lotfi OTAI</div>
+      <div class="login-profile-title">SENIOR QA AUTOMATION ENGINEER</div>
+    </div>
+    <div class="login-box">
+      <div class="login-logo-wrap"><img src="login-logo.svg" alt="Appium Test Intelligence" class="login-logo" /></div>
+      <div class="login-subtitle">Sign in to access the dashboard</div>
+      <form id="login-form">
+        <div class="form-group">
+          <label for="engineer-name">ENGINEER NAME</label>
+          <input type="text" id="engineer-name" name="engineerName" placeholder="Enter engineer name" required autocomplete="name" />
+        </div>
+        <div class="form-group">
+          <label for="engineer-password">PASSWORD</label>
+          <input type="password" id="engineer-password" name="password" placeholder="Enter password" required autocomplete="current-password" />
+        </div>
+        <button type="submit">Sign in</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      var overlay = document.getElementById('login-overlay');
+      var form = document.getElementById('login-form');
+      var SESSION_KEY = 'dashboard_engineer_logged_in';
+      var VALID_NAME = 'Lotfi OTAI';
+      var VALID_PASSWORD = 'Naguez21102024';
+      if (sessionStorage.getItem(SESSION_KEY)) {
+        overlay.classList.add('hidden');
+      }
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        var name = document.getElementById('engineer-name').value.trim();
+        var pwd = document.getElementById('engineer-password').value;
+        var errorEl = document.getElementById('login-error');
+        if (errorEl) errorEl.remove();
+        if (name === VALID_NAME && pwd === VALID_PASSWORD) {
+          sessionStorage.setItem(SESSION_KEY, name);
+          overlay.classList.add('hidden');
+        } else {
+          var err = document.createElement('p');
+          err.id = 'login-error';
+          err.className = 'login-error';
+          err.textContent = 'Invalid Engineer Name or Password.';
+          form.insertBefore(err, form.querySelector('button'));
+        }
+      });
+      document.addEventListener('click', function(e) {
+        if (e.target.closest('#logout-btn')) {
+          sessionStorage.removeItem(SESSION_KEY);
+          window.location.reload();
+        }
+      });
+    })();
+  </script>
+
+  <script>window.REPORT_DATA = {"generated": "2026-02-24T02:06:09.217170", "lastRun": "24-Feb-2026 02:06 AM", "duration": "00:04:19", "totalTests": 5, "pass": 5, "fail": 0, "skip": 0, "successRate": 100.0, "tests": [{"name": "User Should Be Able To Login Successfully", "status": "PASS", "elapsed": 71.61, "suite": "Login", "tags": ["login", "LotfiOTAI-001"], "steps": [{"name": "Run Keywords", "status": "PASS", "elapsed": 45.0, "children": [{"name": "Open Test Application", "status": "PASS", "elapsed": 35.93, "children": [{"name": "Open Application", "status": "PASS", "elapsed": 35.93, "children": []}]}, {"name": "The application is launched", "status": "PASS", "elapsed": 0.0, "children": [{"name": "Log", "status": "PASS", "elapsed": 0.0, "children": []}]}, {"name": "The app content should be visible", "status": "PASS", "elapsed": 9.06, "children": [{"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 9.06, "children": []}, {"name": "Log", "status": "PASS", "elapsed": 0.0, "children": []}]}]}, {"name": "Given the user is on the login page", "status": "PASS", "elapsed": 7.72, "children": [{"name": "the user taps on element with id \"${MENU_BUTTON_id}\"", "status": "PASS", "elapsed": 1.91, "children": [{"name": "Get Element By Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 0.71, "children": []}, {"name": "Click Element", "status": "PASS", "elapsed": 1.19, "children": []}]}, {"name": "Get Element By Text", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Click Element", "status": "PASS", "elapsed": 1.64, "children": []}, {"name": "Get Element By Resource Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 4.16, "children": []}]}, {"name": "When the user enters credentials", "status": "PASS", "elapsed": 13.14, "children": [{"name": "Get Element By Resource Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Get Element By Resource Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Get Element By Resource Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Click Element", "status": "PASS", "elapsed": 0.76, "children": []}, {"name": "Input Text", "status": "PASS", "elapsed": 1.5, "children": []}, {"name": "Click Element", "status": "PASS", "elapsed": 1.08, "children": []}, {"name": "Input Text", "status": "PASS", "elapsed": 1.17, "children": []}, {"name": "Hide Keyboard", "status": "PASS", "elapsed": 6.87, "children": []}, {"name": "Click Element", "status": "PASS", "elapsed": 1.74, "children": []}]}, {"name": "Then the Products page should be displayed", "status": "PASS", "elapsed": 4.6, "children": [{"name": "Wait Until Page Contains", "status": "PASS", "elapsed": 4.6, "children": []}, {"name": "Log", "status": "PASS", "elapsed": 0.0, "children": []}]}, {"name": "Close Test Application", "status": "PASS", "elapsed": 1.15, "children": [{"name": "Close Application", "status": "PASS", "elapsed": 1.15, "children": []}]}], "logs": [{"level": "INFO", "timestamp": "", "message": "Application launched via Suite Setup"}, {"level": "INFO", "timestamp": "", "message": "xpath criteria: //*"}, {"level": "INFO", "timestamp": "", "message": "App launched successfully"}, {"level": "INFO", "timestamp": "", "message": "${ELEMENT} = id=com.saucelabs.mydemoapp.android:id/menuIV"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/menuIV"}, {"level": "INFO", "timestamp": "", "message": "Clicking element 'id=com.saucelabs.mydemoapp.android:id/menuIV'."}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/menuIV"}, {"level": "INFO", "timestamp": "", "message": "${LOGIN_MENU_ITEM} = xpath=//*[@text='Log In']"}, {"level": "INFO", "timestamp": "", "message": "Clicking element 'xpath=//*[@text='Log In']'."}, {"level": "INFO", "timestamp": "", "message": "xpath criteria: //*[@text='Log In']"}, {"level": "INFO", "timestamp": "", "message": "${username_field} = xpath=//*[contains(@resource-id,'nameET')]"}, {"level": "INFO", "timestamp": "", "message": "xpath criteria: //*[contains(@resource-id,'nameET')]\nxpath criteria: //*[contains(@resource-id,'nameET')]"}, {"level": "INFO", "timestamp": "", "message": "${username_field} = xpath=//*[contains(@resource-id,'nameET')]"}, {"level": "INFO", "timestamp": "", "message": "${password_field} = xpath=//*[contains(@resource-id,'passwordET')]"}, {"level": "INFO", "timestamp": "", "message": "${login_button} = xpath=//*[contains(@resource-id,'loginBtn')]"}, {"level": "INFO", "timestamp": "", "message": "Clicking element 'xpath=//*[contains(@resource-id,'nameET')]'."}, {"level": "INFO", "timestamp": "", "message": "xpath criteria: //*[contains(@resource-id,'nameET')]"}, {"level": "INFO", "timestamp": "", "message": "Typing text 'bod@example.com' into text field 'xpath=//*[contains(@resource-id,'nameET')]'"}, {"level": "INFO", "timestamp": "", "message": "xpath criteria: //*[contains(@resource-id,'nameET')]"}, {"level": "INFO", "timestamp": "", "message": "Clicking element 'xpath=//*[contains(@resource-id,'passwordET')]'."}, {"level": "INFO", "timestamp": "", "message": "xpath criteria: //*[contains(@resource-id,'passwordET')]"}, {"level": "INFO", "timestamp": "", "message": "Typing text '10203040' into text field 'xpath=//*[contains(@resource-id,'passwordET')]'"}, {"level": "INFO", "timestamp": "", "message": "xpath criteria: //*[contains(@resource-id,'passwordET')]"}, {"level": "INFO", "timestamp": "", "message": "Clicking element 'xpath=//*[contains(@resource-id,'loginBtn')]'."}, {"level": "INFO", "timestamp": "", "message": "xpath criteria: //*[contains(@resource-id,'loginBtn')]"}, {"level": "INFO", "timestamp": "", "message": "Login successful - Products page is displayed"}]}, {"name": "User Should Not Be Able To Login Successfully", "status": "PASS", "elapsed": 41.64, "suite": "Login", "tags": ["login", "LotfiOTAI-002"], "steps": [{"name": "Run Keywords", "status": "PASS", "elapsed": 19.87, "children": [{"name": "Open Test Application", "status": "PASS", "elapsed": 14.52, "children": [{"name": "Open Application", "status": "PASS", "elapsed": 14.52, "children": []}]}, {"name": "The application is launched", "status": "PASS", "elapsed": 0.0, "children": [{"name": "Log", "status": "PASS", "elapsed": 0.0, "children": []}]}, {"name": "The app content should be visible", "status": "PASS", "elapsed": 5.34, "children": [{"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 5.33, "children": []}, {"name": "Log", "status": "PASS", "elapsed": 0.0, "children": []}]}]}, {"name": "Given the user is on the login page", "status": "PASS", "elapsed": 5.67, "children": [{"name": "the user taps on element with id \"${MENU_BUTTON_id}\"", "status": "PASS", "elapsed": 1.43, "children": [{"name": "Get Element By Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 0.59, "children": []}, {"name": "Click Element", "status": "PASS", "elapsed": 0.85, "children": []}]}, {"name": "Get Element By Text", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Click Element", "status": "PASS", "elapsed": 2.14, "children": []}, {"name": "Get Element By Resource Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 2.09, "children": []}]}, {"name": "When the user enters credentials", "status": "PASS", "elapsed": 9.57, "children": [{"name": "Get Element By Resource Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Get Element By Resource Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Get Element By Resource Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Click Element", "status": "PASS", "elapsed": 0.44, "children": []}, {"name": "Input Text", "status": "PASS", "elapsed": 1.7, "children": []}, {"name": "Click Element", "status": "PASS", "elapsed": 1.47, "children": []}, {"name": "Input Text", "status": "PASS", "elapsed": 1.32, "children": []}, {"name": "Hide Keyboard", "status": "PASS", "elapsed": 3.63, "children": []}, {"name": "Click Element", "status": "PASS", "elapsed": 1.0, "children": []}]}, {"name": "And the user taps the login button", "status": "PASS", "elapsed": 1.22, "children": [{"name": "Get Element By Resource Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Click Element", "status": "PASS", "elapsed": 1.21, "children": []}]}, {"name": "Then the Products page should not be displayed", "status": "PASS", "elapsed": 3.67, "children": [{"name": "Sleep", "status": "PASS", "elapsed": 3.0, "children": []}, {"name": "Page Should Contain Text", "status": "PASS", "elapsed": 0.66, "children": []}]}, {"name": "Close Test Application", "status": "PASS", "elapsed": 1.65, "children": [{"name": "Close Application", "status": "PASS", "elapsed": 1.65, "children": []}]}], "logs": [{"level": "INFO", "timestamp": "", "message": "Application launched via Suite Setup"}, {"level": "INFO", "timestamp": "", "message": "xpath criteria: //*"}, {"level": "INFO", "timestamp": "", "message": "App launched successfully"}, {"level": "INFO", "timestamp": "", "message": "${ELEMENT} = id=com.saucelabs.mydemoapp.android:id/menuIV"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/menuIV"}, {"level": "INFO", "timestamp": "", "message": "Clicking element 'id=com.saucelabs.mydemoapp.android:id/menuIV'."}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/menuIV"}, {"level": "INFO", "timestamp": "", "message": "${LOGIN_MENU_ITEM} = xpath=//*[@text='Log In']"}, {"level": "INFO", "timestamp": "", "message": "Clicking element 'xpath=//*[@text='Log In']'."}, {"level": "INFO", "timestamp": "", "message": "xpath criteria: //*[@text='Log In']"}, {"level": "INFO", "timestamp": "", "message": "${username_field} = xpath=//*[contains(@resource-id,'nameET')]"}, {"level": "INFO", "timestamp": "", "message": "xpath criteria: //*[contains(@resource-id,'nameET')]"}, {"level": "INFO", "timestamp": "", "message": "${username_field} = xpath=//*[contains(@resource-id,'nameET')]"}, {"level": "INFO", "timestamp": "", "message": "${password_field} = xpath=//*[contains(@resource-id,'passwordET')]"}, {"level": "INFO", "timestamp": "", "message": "${login_button} = xpath=//*[contains(@resource-id,'loginBtn')]"}, {"level": "INFO", "timestamp": "", "message": "Clicking element 'xpath=//*[contains(@resource-id,'nameET')]'."}, {"level": "INFO", "timestamp": "", "message": "xpath criteria: //*[contains(@resource-id,'nameET')]"}, {"level": "INFO", "timestamp": "", "message": "Typing text 'invalid@example.com' into text field 'xpath=//*[contains(@resource-id,'nameET')]'"}, {"level": "INFO", "timestamp": "", "message": "xpath criteria: //*[contains(@resource-id,'nameET')]"}, {"level": "INFO", "timestamp": "", "message": "Clicking element 'xpath=//*[contains(@resource-id,'passwordET')]'."}, {"level": "INFO", "timestamp": "", "message": "xpath criteria: //*[contains(@resource-id,'passwordET')]"}, {"level": "INFO", "timestamp": "", "message": "Typing text '' into text field 'xpath=//*[contains(@resource-id,'passwordET')]'"}, {"level": "INFO", "timestamp": "", "message": "xpath criteria: //*[contains(@resource-id,'passwordET')]"}, {"level": "INFO", "timestamp": "", "message": "Clicking element 'xpath=//*[contains(@resource-id,'loginBtn')]'."}, {"level": "INFO", "timestamp": "", "message": "xpath criteria: //*[contains(@resource-id,'loginBtn')]"}, {"level": "INFO", "timestamp": "", "message": "${login_button} = xpath=//*[contains(@resource-id,'loginBtn')]"}, {"level": "INFO", "timestamp": "", "message": "Clicking element 'xpath=//*[contains(@resource-id,'loginBtn')]'."}, {"level": "INFO", "timestamp": "", "message": "xpath criteria: //*[contains(@resource-id,'loginBtn')]"}, {"level": "INFO", "timestamp": "", "message": "Slept 3 seconds."}, {"level": "INFO", "timestamp": "", "message": "Current page contains text 'Enter Password'."}]}, {"name": "User Should Be Able To Place An Order", "status": "PASS", "elapsed": 90.86, "suite": "Place Order", "tags": ["LotfiOTAI-021", "place_order"], "steps": [{"name": "Run Keywords", "status": "PASS", "elapsed": 22.61, "children": [{"name": "Open Test Application", "status": "PASS", "elapsed": 15.96, "children": [{"name": "Open Application", "status": "PASS", "elapsed": 15.96, "children": []}]}, {"name": "The application is launched", "status": "PASS", "elapsed": 0.0, "children": [{"name": "Log", "status": "PASS", "elapsed": 0.0, "children": []}]}, {"name": "The app content should be visible", "status": "PASS", "elapsed": 6.64, "children": [{"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 6.64, "children": []}, {"name": "Log", "status": "PASS", "elapsed": 0.0, "children": []}]}]}, {"name": "Given the app is on the home screen", "status": "PASS", "elapsed": 0.59, "children": [{"name": "Get Element By Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 0.59, "children": []}]}, {"name": "When the user taps on a product", "status": "PASS", "elapsed": 1.21, "children": [{"name": "Click Element", "status": "PASS", "elapsed": 1.21, "children": []}]}, {"name": "Then the product detail screen should be displayed", "status": "PASS", "elapsed": 2.35, "children": [{"name": "Get Element By Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 2.35, "children": []}, {"name": "Log", "status": "PASS", "elapsed": 0.0, "children": []}]}, {"name": "And the user increases item quantity to ${QUANTITY} items", "status": "PASS", "elapsed": 7.77, "children": [{"name": "Get Element By Id", "status": "PASS", "elapsed": 0.0, "children": []}]}, {"name": "And the user taps on the add to cart button", "status": "PASS", "elapsed": 1.06, "children": [{"name": "the user taps on element with id \"${ADD_TO_CART_BUTTON_id}\"", "status": "PASS", "elapsed": 1.06, "children": [{"name": "Get Element By Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 0.75, "children": []}, {"name": "Click Element", "status": "PASS", "elapsed": 0.3, "children": []}]}]}, {"name": "Then the user asserts the displayed number of items in the cart", "status": "PASS", "elapsed": 1.11, "children": [{"name": "Get Element By Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Page Should Contain Element", "status": "PASS", "elapsed": 0.71, "children": []}, {"name": "Get Text", "status": "PASS", "elapsed": 0.39, "children": []}, {"name": "Evaluate", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Should Be Equal As Strings", "status": "PASS", "elapsed": 0.0, "children": []}]}, {"name": "Then the user clicks on the cart button", "status": "PASS", "elapsed": 3.4, "children": [{"name": "the user taps on element with id \"${CART_BUTTON_id}\"", "status": "PASS", "elapsed": 0.79, "children": [{"name": "Get Element By Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 0.22, "children": []}, {"name": "Click Element", "status": "PASS", "elapsed": 0.57, "children": []}]}, {"name": "Wait Until Page Contains", "status": "PASS", "elapsed": 2.61, "children": []}]}, {"name": "Then the user clicks on the proceed to checkout button", "status": "PASS", "elapsed": 3.42, "children": [{"name": "the user taps on element with id \"${PROCEED_TO_CHECKOUT_BUTTON_id}\"", "status": "PASS", "elapsed": 0.85, "children": [{"name": "Get Element By Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 0.4, "children": []}, {"name": "Click Element", "status": "PASS", "elapsed": 0.44, "children": []}]}, {"name": "Get Element By Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 2.57, "children": []}]}, {"name": "Then the user enters credentials", "status": "PASS", "elapsed": 10.19, "children": [{"name": "Get Element By Resource Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Get Element By Resource Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Get Element By Resource Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Click Element", "status": "PASS", "elapsed": 0.53, "children": []}, {"name": "Input Text", "status": "PASS", "elapsed": 1.8, "children": []}, {"name": "Click Element", "status": "PASS", "elapsed": 1.58, "children": []}, {"name": "Input Text", "status": "PASS", "elapsed": 1.31, "children": []}, {"name": "Hide Keyboard", "status": "PASS", "elapsed": 3.99, "children": []}, {"name": "Click Element", "status": "PASS", "elapsed": 0.97, "children": []}]}, {"name": "Then the user enters shipping address information", "status": "PASS", "elapsed": 14.79, "children": [{"name": "the user enters \"${FULL_NAME}\" in field with id \"${FULL_NAME_EDIT_TEXT_id}\"", "status": "PASS", "elapsed": 4.36, "children": [{"name": "Get Element By Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 2.66, "children": []}, {"name": "Input Text", "status": "PASS", "elapsed": 1.7, "children": []}]}, {"name": "the user enters \"${ADDRESS_1}\" in field with id \"${ADDRESS_1_EDIT_TEXT_id}\"", "status": "PASS", "elapsed": 1.73, "children": [{"name": "Get Element By Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 0.65, "children": []}, {"name": "Input Text", "status": "PASS", "elapsed": 1.07, "children": []}]}, {"name": "the user enters \"${ADDRESS_2}\" in field with id \"${ADDRESS_2_EDIT_TEXT_id}\"", "status": "PASS", "elapsed": 1.77, "children": [{"name": "Get Element By Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 0.66, "children": []}, {"name": "Input Text", "status": "PASS", "elapsed": 1.11, "children": []}]}, {"name": "the user enters \"${CITY}\" in field with id \"${CITY_EDIT_TEXT_id}\"", "status": "PASS", "elapsed": 1.83, "children": [{"name": "Get Element By Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 0.75, "children": []}, {"name": "Input Text", "status": "PASS", "elapsed": 1.08, "children": []}]}, {"name": "the user enters \"${STATE}\" in field with id \"${STATE_EDIT_TEXT_id}\"", "status": "PASS", "elapsed": 1.6, "children": [{"name": "Get Element By Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 0.7, "children": []}, {"name": "Input Text", "status": "PASS", "elapsed": 0.9, "children": []}]}, {"name": "the user enters \"${ZIP}\" in field with id \"${ZIP_EDIT_TEXT_id}\"", "status": "PASS", "elapsed": 1.77, "children": [{"name": "Get Element By Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 0.79, "children": []}, {"name": "Input Text", "status": "PASS", "elapsed": 0.98, "children": []}]}, {"name": "the user enters \"${COUNTRY}\" in field with id \"${COUNTRY_EDIT_TEXT_id}\"", "status": "PASS", "elapsed": 1.72, "children": [{"name": "Get Element By Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 0.65, "children": []}, {"name": "Input Text", "status": "PASS", "elapsed": 1.06, "children": []}]}]}, {"name": "Then the user taps on the payment button", "status": "PASS", "elapsed": 4.05, "children": [{"name": "the user taps on element with id \"${PAYMENT_BUTTON_id}\"", "status": "PASS", "elapsed": 1.29, "children": [{"name": "Get Element By Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 0.73, "children": []}, {"name": "Click Element", "status": "PASS", "elapsed": 0.56, "children": []}]}, {"name": "Wait Until Page Contains", "status": "PASS", "elapsed": 2.76, "children": []}]}, {"name": "Then the user enters a payment method information", "status": "PASS", "elapsed": 6.36, "children": [{"name": "the user enters \"${FULL_NAME}\" in field with id \"${PAYMENT_FULL_NAME_EDIT_TEXT_id}\"", "status": "PASS", "elapsed": 1.71, "children": [{"name": "Get Element By Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 0.15, "children": []}, {"name": "Input Text", "status": "PASS", "elapsed": 1.55, "children": []}]}, {"name": "the user enters \"${CARD_NUMBER}\" in field with id \"${CARD_NUMBER_EDIT_TEXT_id}\"", "status": "PASS", "elapsed": 1.73, "children": [{"name": "Get Element By Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 0.75, "children": []}, {"name": "Input Text", "status": "PASS", "elapsed": 0.98, "children": []}]}, {"name": "the user enters \"${EXPIRATION_DATE}\" in field with id \"${EXPIRATION_DATE_EDIT_TEXT_id}\"", "status": "PASS", "elapsed": 1.18, "children": [{"name": "Get Element By Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 0.7, "children": []}, {"name": "Input Text", "status": "PASS", "elapsed": 0.48, "children": []}]}, {"name": "the user enters \"${SECURITY_CODE}\" in field with id \"${SECURITY_CODE_EDIT_TEXT_id}\"", "status": "PASS", "elapsed": 1.75, "children": [{"name": "Get Element By Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 0.69, "children": []}, {"name": "Input Text", "status": "PASS", "elapsed": 1.05, "children": []}]}]}, {"name": "Then the user taps on the review order button", "status": "PASS", "elapsed": 3.49, "children": [{"name": "the user taps on element with id \"${PAYMENT_BUTTON_id}\"", "status": "PASS", "elapsed": 2.8, "children": [{"name": "Get Element By Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 0.69, "children": []}, {"name": "Click Element", "status": "PASS", "elapsed": 2.11, "children": []}]}, {"name": "Wait Until Page Contains", "status": "PASS", "elapsed": 0.69, "children": []}]}, {"name": "Then the user taps on the place order button", "status": "PASS", "elapsed": 3.45, "children": [{"name": "the user taps on element with id \"${PAYMENT_BUTTON_id}\"", "status": "PASS", "elapsed": 0.86, "children": [{"name": "Get Element By Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 0.39, "children": []}, {"name": "Click Element", "status": "PASS", "elapsed": 0.46, "children": []}]}, {"name": "Wait Until Page Contains", "status": "PASS", "elapsed": 1.96, "children": []}, {"name": "Wait Until Page Contains", "status": "PASS", "elapsed": 0.33, "children": []}, {"name": "Wait Until Page Contains", "status": "PASS", "elapsed": 0.3, "children": []}]}, {"name": "Sleep", "status": "PASS", "elapsed": 5.0, "children": []}], "logs": [{"level": "INFO", "timestamp": "", "message": "Application launched via Suite Setup"}, {"level": "INFO", "timestamp": "", "message": "xpath criteria: //*"}, {"level": "INFO", "timestamp": "", "message": "App launched successfully"}, {"level": "INFO", "timestamp": "", "message": "${PRODUCT_TITLE} = id=com.saucelabs.mydemoapp.android:id/productTV"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/productTV"}, {"level": "INFO", "timestamp": "", "message": "Clicking element 'xpath=(//android.widget.ImageView[@content-desc=\"Product Image\"])[3]'."}, {"level": "INFO", "timestamp": "", "message": "xpath criteria: (//android.widget.ImageView[@content-desc=\"Product Image\"])[3]"}, {"level": "INFO", "timestamp": "", "message": "${PRODUCT_TITLE} = id=com.saucelabs.mydemoapp.android:id/productTV"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/productTV\ncriteria is com.saucelabs.mydemoapp.android:id/productTV"}, {"level": "INFO", "timestamp": "", "message": "Product detail screen opened successfully"}, {"level": "INFO", "timestamp": "", "message": "${PLUS_BUTTON} = id=com.saucelabs.mydemoapp.android:id/plusIV"}, {"level": "INFO", "timestamp": "", "message": "Clicking element 'id=com.saucelabs.mydemoapp.android:id/plusIV'."}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/plusIV"}, {"level": "INFO", "timestamp": "", "message": "Clicking element 'id=com.saucelabs.mydemoapp.android:id/plusIV'."}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/plusIV"}, {"level": "INFO", "timestamp": "", "message": "Clicking element 'id=com.saucelabs.mydemoapp.android:id/plusIV'."}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/plusIV"}, {"level": "INFO", "timestamp": "", "message": "Clicking element 'id=com.saucelabs.mydemoapp.android:id/plusIV'."}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/plusIV"}, {"level": "INFO", "timestamp": "", "message": "Clicking element 'id=com.saucelabs.mydemoapp.android:id/plusIV'."}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/plusIV"}, {"level": "INFO", "timestamp": "", "message": "Clicking element 'id=com.saucelabs.mydemoapp.android:id/plusIV'."}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/plusIV"}, {"level": "INFO", "timestamp": "", "message": "Clicking element 'id=com.saucelabs.mydemoapp.android:id/plusIV'."}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/plusIV"}, {"level": "INFO", "timestamp": "", "message": "Clicking element 'id=com.saucelabs.mydemoapp.android:id/plusIV'."}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/plusIV"}, {"level": "INFO", "timestamp": "", "message": "Clicking element 'id=com.saucelabs.mydemoapp.android:id/plusIV'."}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/plusIV"}, {"level": "INFO", "timestamp": "", "message": "${ELEMENT} = id=com.saucelabs.mydemoapp.android:id/cartBt"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/cartBt"}, {"level": "INFO", "timestamp": "", "message": "Clicking element 'id=com.saucelabs.mydemoapp.android:id/cartBt'."}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/cartBt"}, {"level": "INFO", "timestamp": "", "message": "${CART_ITEM_COUNT} = id=com.saucelabs.mydemoapp.android:id/cartTV"}, {"level": "INFO", "timestamp": "", "message": "Current page contains element 'id=com.saucelabs.mydemoapp.android:id/cartTV'."}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/cartTV"}, {"level": "INFO", "timestamp": "", "message": "Element 'id=com.saucelabs.mydemoapp.android:id/cartTV' text is '10'"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/cartTV"}, {"level": "INFO", "timestamp": "", "message": "${CART_ITEM_COUNT_TEXT} = 10"}, {"level": "INFO", "timestamp": "", "message": "${expected} = 10"}, {"level": "INFO", "timestamp": "", "message": "Argument types are:\n<class 'str'>\n<class 'int'>"}, {"level": "INFO", "timestamp": "", "message": "${ELEMENT} = id=com.saucelabs.mydemoapp.android:id/cartIV"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/cartIV"}, {"level": "INFO", "timestamp": "", "message": "Clicking element 'id=com.saucelabs.mydemoapp.android:id/cartIV'."}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/cartIV"}, {"level": "INFO", "timestamp": "", "message": "${ELEMENT} = id=com.saucelabs.mydemoapp.android:id/cartBt"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/cartBt"}, {"level": "INFO", "timestamp": "", "message": "Clicking element 'id=com.saucelabs.mydemoapp.android:id/cartBt'."}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/cartBt"}, {"level": "INFO", "timestamp": "", "message": "${LOGIN_BUTTON} = id=com.saucelabs.mydemoapp.android:id/loginBtn"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/loginBtn\ncriteria is com.saucelabs.mydemoapp.android:id/loginBtn"}, {"level": "INFO", "timestamp": "", "message": "${username_field} = xpath=//*[contains(@resource-id,'nameET')]"}, {"level": "INFO", "timestamp": "", "message": "${password_field} = xpath=//*[contains(@resource-id,'passwordET')]"}, {"level": "INFO", "timestamp": "", "message": "${login_button} = xpath=//*[contains(@resource-id,'loginBtn')]"}, {"level": "INFO", "timestamp": "", "message": "Clicking element 'xpath=//*[contains(@resource-id,'nameET')]'."}, {"level": "INFO", "timestamp": "", "message": "xpath criteria: //*[contains(@resource-id,'nameET')]"}, {"level": "INFO", "timestamp": "", "message": "Typing text 'bod@example.com' into text field 'xpath=//*[contains(@resource-id,'nameET')]'"}, {"level": "INFO", "timestamp": "", "message": "xpath criteria: //*[contains(@resource-id,'nameET')]"}, {"level": "INFO", "timestamp": "", "message": "Clicking element 'xpath=//*[contains(@resource-id,'passwordET')]'."}, {"level": "INFO", "timestamp": "", "message": "xpath criteria: //*[contains(@resource-id,'passwordET')]"}, {"level": "INFO", "timestamp": "", "message": "Typing text '10203040' into text field 'xpath=//*[contains(@resource-id,'passwordET')]'"}, {"level": "INFO", "timestamp": "", "message": "xpath criteria: //*[contains(@resource-id,'passwordET')]"}, {"level": "INFO", "timestamp": "", "message": "Clicking element 'xpath=//*[contains(@resource-id,'loginBtn')]'."}, {"level": "INFO", "timestamp": "", "message": "xpath criteria: //*[contains(@resource-id,'loginBtn')]"}, {"level": "INFO", "timestamp": "", "message": "${FIELD} = id=com.saucelabs.mydemoapp.android:id/fullNameET"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/fullNameET\ncriteria is com.saucelabs.mydemoapp.android:id/fullNameET"}, {"level": "INFO", "timestamp": "", "message": "Typing text 'Lotfi OTAI' into text field 'id=com.saucelabs.mydemoapp.android:id/fullNameET'"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/fullNameET"}, {"level": "INFO", "timestamp": "", "message": "${FIELD} = id=com.saucelabs.mydemoapp.android:id/address1ET"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/address1ET"}, {"level": "INFO", "timestamp": "", "message": "Typing text 'La Soukra' into text field 'id=com.saucelabs.mydemoapp.android:id/address1ET'"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/address1ET"}, {"level": "INFO", "timestamp": "", "message": "${FIELD} = id=com.saucelabs.mydemoapp.android:id/address2ET"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/address2ET"}, {"level": "INFO", "timestamp": "", "message": "Typing text 'Ariana' into text field 'id=com.saucelabs.mydemoapp.android:id/address2ET'"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/address2ET"}, {"level": "INFO", "timestamp": "", "message": "${FIELD} = id=com.saucelabs.mydemoapp.android:id/cityET"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/cityET"}, {"level": "INFO", "timestamp": "", "message": "Typing text 'Tunis' into text field 'id=com.saucelabs.mydemoapp.android:id/cityET'"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/cityET"}, {"level": "INFO", "timestamp": "", "message": "${FIELD} = id=com.saucelabs.mydemoapp.android:id/stateET"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/stateET"}, {"level": "INFO", "timestamp": "", "message": "Typing text 'Tunis' into text field 'id=com.saucelabs.mydemoapp.android:id/stateET'"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/stateET"}, {"level": "INFO", "timestamp": "", "message": "${FIELD} = id=com.saucelabs.mydemoapp.android:id/zipET"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/zipET"}, {"level": "INFO", "timestamp": "", "message": "Typing text '2036' into text field 'id=com.saucelabs.mydemoapp.android:id/zipET'"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/zipET"}, {"level": "INFO", "timestamp": "", "message": "${FIELD} = id=com.saucelabs.mydemoapp.android:id/countryET"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/countryET"}, {"level": "INFO", "timestamp": "", "message": "Typing text 'Tunisia' into text field 'id=com.saucelabs.mydemoapp.android:id/countryET'"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/countryET"}, {"level": "INFO", "timestamp": "", "message": "${ELEMENT} = id=com.saucelabs.mydemoapp.android:id/paymentBtn"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/paymentBtn"}, {"level": "INFO", "timestamp": "", "message": "Clicking element 'id=com.saucelabs.mydemoapp.android:id/paymentBtn'."}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/paymentBtn"}, {"level": "INFO", "timestamp": "", "message": "${FIELD} = id=com.saucelabs.mydemoapp.android:id/nameET"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/nameET"}, {"level": "INFO", "timestamp": "", "message": "Typing text 'Lotfi OTAI' into text field 'id=com.saucelabs.mydemoapp.android:id/nameET'"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/nameET"}, {"level": "INFO", "timestamp": "", "message": "${FIELD} = id=com.saucelabs.mydemoapp.android:id/cardNumberET"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/cardNumberET"}, {"level": "INFO", "timestamp": "", "message": "Typing text '3258 1265 7568 789' into text field 'id=com.saucelabs.mydemoapp.android:id/cardNumberET'"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/cardNumberET"}, {"level": "INFO", "timestamp": "", "message": "${FIELD} = id=com.saucelabs.mydemoapp.android:id/expirationDateET"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/expirationDateET"}, {"level": "INFO", "timestamp": "", "message": "Typing text '05/26' into text field 'id=com.saucelabs.mydemoapp.android:id/expirationDateET'"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/expirationDateET"}, {"level": "INFO", "timestamp": "", "message": "${FIELD} = id=com.saucelabs.mydemoapp.android:id/securityCodeET"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/securityCodeET"}, {"level": "INFO", "timestamp": "", "message": "Typing text '552' into text field 'id=com.saucelabs.mydemoapp.android:id/securityCodeET'"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/securityCodeET"}, {"level": "INFO", "timestamp": "", "message": "${ELEMENT} = id=com.saucelabs.mydemoapp.android:id/paymentBtn"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/paymentBtn"}, {"level": "INFO", "timestamp": "", "message": "Clicking element 'id=com.saucelabs.mydemoapp.android:id/paymentBtn'."}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/paymentBtn"}, {"level": "INFO", "timestamp": "", "message": "${ELEMENT} = id=com.saucelabs.mydemoapp.android:id/paymentBtn"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/paymentBtn"}, {"level": "INFO", "timestamp": "", "message": "Clicking element 'id=com.saucelabs.mydemoapp.android:id/paymentBtn'."}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/paymentBtn"}, {"level": "INFO", "timestamp": "", "message": "Slept 5 seconds."}]}, {"name": "Product Catalog Should Display Items", "status": "PASS", "elapsed": 23.82, "suite": "Product Catalog", "tags": ["LotfiOTAI-011", "product_catalog"], "steps": [{"name": "Run Keywords", "status": "PASS", "elapsed": 21.67, "children": [{"name": "Open Test Application", "status": "PASS", "elapsed": 16.16, "children": [{"name": "Open Application", "status": "PASS", "elapsed": 16.16, "children": []}]}, {"name": "The application is launched", "status": "PASS", "elapsed": 0.0, "children": [{"name": "Log", "status": "PASS", "elapsed": 0.0, "children": []}]}, {"name": "The app content should be visible", "status": "PASS", "elapsed": 5.51, "children": [{"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 5.51, "children": []}, {"name": "Log", "status": "PASS", "elapsed": 0.0, "children": []}]}]}, {"name": "Given the app is on the home screen", "status": "PASS", "elapsed": 0.5, "children": [{"name": "Get Element By Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 0.5, "children": []}]}, {"name": "Then the product titles should be visible", "status": "PASS", "elapsed": 0.54, "children": [{"name": "Get Element By Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 0.54, "children": []}]}, {"name": "And the product prices should be visible", "status": "PASS", "elapsed": 0.42, "children": [{"name": "Get Element By Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Page Should Contain Element", "status": "PASS", "elapsed": 0.41, "children": []}]}, {"name": "And the product images should be visible", "status": "PASS", "elapsed": 0.69, "children": [{"name": "Get Element By Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Page Should Contain Element", "status": "PASS", "elapsed": 0.69, "children": []}]}], "logs": [{"level": "INFO", "timestamp": "", "message": "Application launched via Suite Setup"}, {"level": "INFO", "timestamp": "", "message": "xpath criteria: //*"}, {"level": "INFO", "timestamp": "", "message": "App launched successfully"}, {"level": "INFO", "timestamp": "", "message": "${PRODUCT_TITLE} = id=com.saucelabs.mydemoapp.android:id/productTV"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/productTV"}, {"level": "INFO", "timestamp": "", "message": "${PRODUCT_TITLE} = id=com.saucelabs.mydemoapp.android:id/productTV"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/productTV"}, {"level": "INFO", "timestamp": "", "message": "${PRODUCT_PRICE} = id=com.saucelabs.mydemoapp.android:id/priceTV"}, {"level": "INFO", "timestamp": "", "message": "Current page contains element 'id=com.saucelabs.mydemoapp.android:id/priceTV'."}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/priceTV"}, {"level": "INFO", "timestamp": "", "message": "${PRODUCT_IMAGE} = id=com.saucelabs.mydemoapp.android:id/productIV"}, {"level": "INFO", "timestamp": "", "message": "Current page contains element 'id=com.saucelabs.mydemoapp.android:id/productIV'."}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/productIV"}]}, {"name": "User Should Be Able To Open A Product", "status": "PASS", "elapsed": 26.33, "suite": "Product Catalog", "tags": ["LotfiOTAI-012", "product_catalog"], "steps": [{"name": "Run Keywords", "status": "PASS", "elapsed": 21.02, "children": [{"name": "Open Test Application", "status": "PASS", "elapsed": 15.55, "children": [{"name": "Open Application", "status": "PASS", "elapsed": 15.55, "children": []}]}, {"name": "The application is launched", "status": "PASS", "elapsed": 0.0, "children": [{"name": "Log", "status": "PASS", "elapsed": 0.0, "children": []}]}, {"name": "The app content should be visible", "status": "PASS", "elapsed": 5.46, "children": [{"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 5.46, "children": []}, {"name": "Log", "status": "PASS", "elapsed": 0.0, "children": []}]}]}, {"name": "Given the app is on the home screen", "status": "PASS", "elapsed": 0.4, "children": [{"name": "Get Element By Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 0.4, "children": []}]}, {"name": "When the user taps on a product", "status": "PASS", "elapsed": 1.03, "children": [{"name": "Click Element", "status": "PASS", "elapsed": 1.03, "children": []}]}, {"name": "Then the product detail screen should be displayed", "status": "PASS", "elapsed": 2.45, "children": [{"name": "Get Element By Id", "status": "PASS", "elapsed": 0.0, "children": []}, {"name": "Wait Until Page Contains Element", "status": "PASS", "elapsed": 2.45, "children": []}, {"name": "Log", "status": "PASS", "elapsed": 0.0, "children": []}]}, {"name": "And the user navigates back", "status": "PASS", "elapsed": 1.43, "children": [{"name": "Go Back", "status": "PASS", "elapsed": 1.43, "children": []}]}], "logs": [{"level": "INFO", "timestamp": "", "message": "Application launched via Suite Setup"}, {"level": "INFO", "timestamp": "", "message": "xpath criteria: //*"}, {"level": "INFO", "timestamp": "", "message": "App launched successfully"}, {"level": "INFO", "timestamp": "", "message": "${PRODUCT_TITLE} = id=com.saucelabs.mydemoapp.android:id/productTV"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/productTV"}, {"level": "INFO", "timestamp": "", "message": "Clicking element 'xpath=(//android.widget.ImageView[@content-desc=\"Product Image\"])[3]'."}, {"level": "INFO", "timestamp": "", "message": "xpath criteria: (//android.widget.ImageView[@content-desc=\"Product Image\"])[3]"}, {"level": "INFO", "timestamp": "", "message": "${PRODUCT_TITLE} = id=com.saucelabs.mydemoapp.android:id/productTV"}, {"level": "INFO", "timestamp": "", "message": "criteria is com.saucelabs.mydemoapp.android:id/productTV\ncriteria is com.saucelabs.mydemoapp.android:id/productTV"}, {"level": "INFO", "timestamp": "", "message": "Product detail screen opened successfully"}]}], "failures": [], "byTag": [{"name": "login", "pass": 2, "fail": 0, "skip": 0}, {"name": "LotfiOTAI-001", "pass": 1, "fail": 0, "skip": 0}, {"name": "LotfiOTAI-002", "pass": 1, "fail": 0, "skip": 0}, {"name": "LotfiOTAI-011", "pass": 1, "fail": 0, "skip": 0}, {"name": "LotfiOTAI-012", "pass": 1, "fail": 0, "skip": 0}, {"name": "LotfiOTAI-021", "pass": 1, "fail": 0, "skip": 0}, {"name": "place_order", "pass": 1, "fail": 0, "skip": 0}, {"name": "product_catalog", "pass": 2, "fail": 0, "skip": 0}], "bySuite": [{"name": "Tests.Login", "pass": 2, "fail": 0, "skip": 0}, {"name": "Tests.Place Order", "pass": 1, "fail": 0, "skip": 0}, {"name": "Tests.Product Catalog", "pass": 2, "fail": 0, "skip": 0}], "framework": "Robot Framework", "testType": "Mobile E2E", "version": "1.0.0", "runHistory": [{"lastRun": "24-Feb-2026 02:06 AM", "pass": 5, "fail": 0, "skip": 0, "totalTests": 5, "successRate": 100.0, "duration": "00:04:19"}, {"lastRun": "24-Feb-2026 02:06 AM", "pass": 5, "fail": 0, "skip": 0, "totalTests": 5, "successRate": 100.0, "duration": "00:04:19"}, {"lastRun": "24-Feb-2026 02:06 AM", "pass": 5, "fail": 0, "skip": 0, "totalTests": 5, "successRate": 100.0, "duration": "00:04:19"}, {"lastRun": "24-Feb-2026 02:06 AM", "pass": 5, "fail": 0, "skip": 0, "totalTests": 5, "successRate": 100.0, "duration": "00:04:19"}, {"lastRun": "24-Feb-2026 02:06 AM", "pass": 5, "fail": 0, "skip": 0, "totalTests": 5, "successRate": 100.0, "duration": "00:04:19"}]};</script>
+  <header class="header">
+    <div class="header-brand">
+      <img src="dashboard-logo.svg" alt="Appium E2E – Mobile Android Testing" class="header-logo" />
+      <span class="header-brand-divider" aria-hidden="true"></span>
+      <h1 class="header-title"><span class="title-auto">Automation Test Reporting Dashboard</span></h1>
+    </div>
+    <div class="header-actions">
+      <input type="text" class="search" id="search" placeholder="Search by test..." />
+      <input type="text" class="search" id="tag-filter" placeholder="Search by tag..." />
+      <div class="project-chip" id="project-wrap" title="Mobile Android E2E">
+        <span class="project-chip-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12" y2="18.01"/>
+          </svg>
+        </span>
+        <span id="project-label">Mobile Android E2E</span>
+        <span class="project-chip-dot"></span>
+      </div>
+      <button type="button" class="logout-btn" id="logout-btn" title="Sign out">
+        <svg class="logout-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Log out
+      </button>
+    </div>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-filter-bar">
+        <div class="sidebar-search-wrap">
+          <input type="text" class="sidebar-search-input" id="sidebar-search" placeholder="Search by suite..." />
+          <button type="button" class="filters-btn" id="filters-btn" aria-expanded="false">Filters <span class="caret">&#9660;</span></button>
+        </div>
+        <div class="filters-dropdown" id="filters-dropdown"></div>
+      </div>
+      <h3 class="tests-section-title">Tests</h3>
+      <div id="tests-list"></div>
+      <h3 class="passes-section-title">Passes</h3>
+      <div id="passes-list"></div>
+      <h3 class="failures-section-title">Failures</h3>
+      <div id="failures-list"></div>
+      <h3 class="run-summary-section-title">Run Summary</h3>
+      <div id="tests-info-list"></div>
+    </aside>
+    <main class="main">
+      <div class="cards">
+        <div class="card pass"><div class="value" id="card-pass">0</div><div class="label">Passed</div></div>
+        <div class="card fail"><div class="value" id="card-fail">0</div><div class="label">Failed</div></div>
+        <div class="card skip"><div class="value" id="card-skip">0</div><div class="label">Skipped</div></div>
+      </div>
+      <div class="content-grid">
+        <div class="suite-info">
+          <div class="suite-info-head"><h2>Run overview</h2></div>
+          <div class="suite-info-owner">
+            <img src="owner-photo.png" alt="Lotfi OTAI" class="suite-logo" />
+            <div>
+              <div class="owner-name">Lotfi OTAI</div>
+              <div class="owner-label">Senior QA Automation Engineer</div>
+            </div>
+          </div>
+          <div class="suite-info-body">
+            <div class="suite-info-group">
+              <div class="suite-info-group-title">Run</div>
+              <div class="row"><span class="key">Success rate</span><span id="suite-rate" class="value highlight">–</span></div>
+              <div class="row"><span class="key">Last run</span><span id="suite-lastrun" class="value">–</span></div>
+              <div class="row"><span class="key">Duration</span><span id="suite-duration" class="value">–</span></div>
+              <div class="row"><span class="key">Test type</span><span id="suite-type" class="value">–</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="history-chart-card">
+          <div class="history-chart-head">
+            <h2>Test stability</h2>
+            <span class="history-chart-subtitle" id="history-chart-subtitle"></span>
+          </div>
+          <div class="history-chart-wrap"><canvas id="chart-history"></canvas></div>
+        </div>
+      </div>
+      <div class="charts">
+        <div class="chart-card chart-card-summary"><h3>Tests By Suite</h3><canvas id="chart-suite"></canvas></div>
+        <div class="chart-card chart-card-summary"><h3>Summary</h3><canvas id="chart-status"></canvas></div>
+      </div>
+    </main>
+  </div>
+  <div class="test-detail-overlay" id="test-detail-overlay" role="dialog" aria-modal="true" aria-labelledby="test-detail-title">
+    <div class="test-detail-modal" id="test-detail-modal">
+      <div class="test-detail-header">
+        <h2 id="test-detail-title">Test details</h2>
+        <button type="button" class="test-detail-close" id="test-detail-close" aria-label="Close">&#215;</button>
+        <div class="test-detail-tabs">
+          <button type="button" data-panel="info" class="active">Info</button>
+          <button type="button" data-panel="steps">Steps</button>
+          <button type="button" data-panel="logs">Logs</button>
+        </div>
+      </div>
+      <div class="test-detail-body">
+        <div id="panel-info" class="test-detail-panel active test-detail-info"></div>
+        <div id="panel-steps" class="test-detail-panel test-detail-steps"></div>
+        <div id="panel-logs" class="test-detail-panel test-detail-logs"></div>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function() {
+      if (typeof ChartDataLabels !== 'undefined') Chart.register(ChartDataLabels);
+      else if (typeof chartjsPluginDatalabels !== 'undefined') Chart.register(chartjsPluginDatalabels);
+      const data = window.REPORT_DATA;
+      if (!data) {
+        document.body.innerHTML = '<div style="padding:24px">No report data. Run <code>python3 generate_report.py</code> then refresh.</div>';
+        return;
+      }
+      var projectLabel = document.getElementById('project-label');
+      var currentType = data.testType || 'Mobile E2E';
+      var labelMap = { 'Mobile E2E': 'Mobile Android E2E' };
+      if (projectLabel) projectLabel.textContent = labelMap[currentType] || currentType;
+      const total = data.totalTests;
+      const pass = data.pass;
+      const fail = data.fail;
+      const skip = data.skip;
+      document.getElementById('card-pass').textContent = pass;
+      document.getElementById('card-fail').textContent = fail;
+      document.getElementById('card-skip').textContent = skip;
+      document.getElementById('suite-rate').textContent = data.successRate + '%';
+      document.getElementById('suite-lastrun').textContent = data.lastRun || '–';
+      document.getElementById('suite-duration').textContent = data.duration || '–';
+      document.getElementById('suite-type').textContent = data.testType || '–';
+      const testsList = document.getElementById('tests-list');
+      var testsBySuite = {};
+      (data.tests || []).forEach(function(t) {
+        var suite = (t.suite && t.suite.trim()) ? t.suite : 'Other';
+        if (!testsBySuite[suite]) testsBySuite[suite] = [];
+        testsBySuite[suite].push(t);
+      });
+      var suiteOrder = ['Products', 'Search', 'Stores'];
+      var sortedSuiteNames = Object.keys(testsBySuite).sort(function(a, b) {
+        var ia = suiteOrder.indexOf(a); var ib = suiteOrder.indexOf(b);
+        if (ia >= 0 && ib >= 0) return ia - ib;
+        if (ia >= 0) return -1; if (ib >= 0) return 1;
+        return a.localeCompare(b);
+      });
+      var filtersDropdown = document.getElementById('filters-dropdown');
+      filtersDropdown.innerHTML = '';
+      sortedSuiteNames.forEach(function(suiteName) {
+        var label = document.createElement('label');
+        var cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.name = 'section-filter';
+        cb.value = suiteName;
+        cb.className = 'filter-suite';
+        label.appendChild(cb);
+        var filterDisplayName = suiteName.length > 15 ? suiteName.substring(0, 15) + '...' : suiteName;
+        label.appendChild(document.createTextNode(' ' + filterDisplayName));
+        filtersDropdown.appendChild(label);
+      });
+      var passLabel = document.createElement('label');
+      var passCb = document.createElement('input');
+      passCb.type = 'checkbox';
+      passCb.name = 'section-filter';
+      passCb.value = 'Passes';
+      passLabel.appendChild(passCb);
+      passLabel.appendChild(document.createTextNode(' Passes'));
+      filtersDropdown.appendChild(passLabel);
+      var failLabel = document.createElement('label');
+      var failCb = document.createElement('input');
+      failCb.type = 'checkbox';
+      failCb.name = 'section-filter';
+      failCb.value = 'Failures';
+      failLabel.appendChild(failCb);
+      failLabel.appendChild(document.createTextNode(' Failures'));
+      filtersDropdown.appendChild(failLabel);
+      sortedSuiteNames.forEach(function(suiteName) {
+        var section = document.createElement('div');
+        section.className = 'suite-section';
+        section.dataset.suite = suiteName;
+        var header = document.createElement('div');
+        header.className = 'suite-section-header';
+        var count = testsBySuite[suiteName].length;
+        var sectionDisplayName = suiteName.length > 15 ? suiteName.substring(0, 15) + '...' : suiteName;
+        header.innerHTML = '<span style="display:flex;align-items:center;gap:12px"><span class="chevron">&#8250;</span><span>' + escapeHtml(sectionDisplayName) + '</span></span><span class="section-count">' + count + '</span>';
+        var body = document.createElement('div');
+        body.className = 'suite-section-tests hidden' + (testsBySuite[suiteName].length >= 5 ? ' scrollable' : '');
+        testsBySuite[suiteName].forEach(function(t) {
+          var div = document.createElement('div');
+          div.className = 'test-item ' + (t.status === 'FAIL' ? 'fail' : 'pass');
+          var tags = t.tags || [];
+          var tagStr = tags.join(',');
+          var primaryTag = tags.filter(function(x) { return /^QATM-\d+/i.test(x); })[0] || tags[0] || '';
+          div.innerHTML = '<div class="test-item-title"><span class="test-name">' + escapeHtml(t.name) + '</span>' + (primaryTag ? '<span class="test-tag">' + escapeHtml(primaryTag) + '</span>' : '') + '</div><span class="pill ' + t.status.toLowerCase() + '">' + t.status + '</span>';
+          div.dataset.name = t.name;
+          div.dataset.suite = suiteName;
+          div.dataset.tags = tagStr;
+          body.appendChild(div);
+        });
+        header.addEventListener('click', function() {
+          header.classList.toggle('expanded');
+          body.classList.toggle('hidden');
+        });
+        section.appendChild(header);
+        section.appendChild(body);
+        testsList.appendChild(section);
+      });
+      /* Passes section: one section with all passed tests (same pattern as Failures) */
+      const passesList = document.getElementById('passes-list');
+      var passedTests = (data.tests || []).filter(function(t) { return t.status === 'PASS'; });
+      var passCount = passedTests.length;
+      var passSection = document.createElement('div');
+      passSection.className = 'suite-section';
+      passSection.dataset.section = 'Passes';
+      var passHeader = document.createElement('div');
+      passHeader.className = 'passes-section-header';
+      passHeader.innerHTML = '<span style="display:flex;align-items:center;gap:12px"><span class="chevron">&#8250;</span><span>Passes</span></span><span class="section-count">' + passCount + '</span>';
+      var passBody = document.createElement('div');
+      passBody.className = 'suite-section-tests hidden' + (passCount >= 5 ? ' scrollable' : '');
+      passedTests.forEach(function(t) {
+        var div = document.createElement('div');
+        div.className = 'test-item pass';
+        var suite = (t.suite && t.suite.trim()) ? t.suite : 'Other';
+        var tags = t.tags || [];
+        var tagStr = tags.join(',');
+        var primaryTag = tags.filter(function(x) { return /^QATM-\d+/i.test(x); })[0] || tags[0] || '';
+        div.innerHTML = '<div class="test-item-title"><span class="test-name">' + escapeHtml(t.name) + '</span>' + (primaryTag ? '<span class="test-tag">' + escapeHtml(primaryTag) + '</span>' : '') + '</div><span class="pill pass">' + t.status + '</span>';
+        div.dataset.name = t.name;
+        div.dataset.suite = suite;
+        div.dataset.tags = tagStr;
+        passBody.appendChild(div);
+      });
+      passHeader.addEventListener('click', function() {
+        passHeader.classList.toggle('expanded');
+        passBody.classList.toggle('hidden');
+      });
+      passSection.appendChild(passHeader);
+      passSection.appendChild(passBody);
+      passesList.appendChild(passSection);
+      const failuresList = document.getElementById('failures-list');
+      var failureCount = (data.failures && data.failures.length) ? data.failures.length : 0;
+      var failSection = document.createElement('div');
+      failSection.className = 'suite-section';
+      var failHeader = document.createElement('div');
+      failHeader.className = 'failures-section-header';
+      failHeader.innerHTML = '<span style="display:flex;align-items:center;gap:12px"><span class="chevron">&#8250;</span><span>Failures</span></span><span class="section-count">' + failureCount + '</span>';
+      var failBody = document.createElement('div');
+      failBody.className = 'suite-section-tests hidden' + (failureCount >= 5 ? ' scrollable' : '');
+      if (data.failures && data.failures.length) {
+        data.failures.forEach(function(t) {
+          var div = document.createElement('div');
+          div.className = 'test-item fail';
+          var tags = t.tags || [];
+          var tagStr = tags.join(',');
+          var primaryTag = tags.filter(function(x) { return /^QATM-\d+/i.test(x); })[0] || tags[0] || '';
+          div.innerHTML = '<div class="test-item-title"><span class="test-name">' + escapeHtml(t.name) + '</span>' + (primaryTag ? '<span class="test-tag">' + escapeHtml(primaryTag) + '</span>' : '') + '</div><span class="pill fail">Fail</span>';
+          div.dataset.name = t.name;
+          div.dataset.suite = t.suite || '';
+          div.dataset.tags = tagStr;
+          failBody.appendChild(div);
+        });
+      }
+      failHeader.addEventListener('click', function() {
+        failHeader.classList.toggle('expanded');
+        failBody.classList.toggle('hidden');
+      });
+      failSection.appendChild(failHeader);
+      failSection.appendChild(failBody);
+      failSection.dataset.section = 'Failures';
+      failuresList.appendChild(failSection);
+      var testsInfoContainer = document.getElementById('tests-info-list');
+      var testsInfoSection = document.createElement('div');
+      testsInfoSection.className = 'suite-section tests-info-section';
+      var testsInfoHeader = document.createElement('div');
+      testsInfoHeader.className = 'tests-info-section-header';
+      testsInfoHeader.innerHTML = '<span style="display:flex;align-items:center;gap:12px"><span class="chevron">&#8250;</span><span>Run Summary</span></span><span class="section-count">' + total + '</span>';
+      var testsInfoBody = document.createElement('div');
+      testsInfoBody.className = 'suite-section-tests hidden';
+      var testsInfoOrder = ['All'].concat(sortedSuiteNames);
+      testsInfoOrder.forEach(function(label) {
+        var count = label === 'All' ? total : (testsBySuite[label] ? testsBySuite[label].length : 0);
+        var displayLabel = label.length > 15 ? label.substring(0, 15) + '...' : label;
+        var countText = count === 1 ? '1 test' : count + ' tests';
+        var row = document.createElement('div');
+        row.className = 'test-info-row';
+        row.innerHTML = '<span>' + escapeHtml(displayLabel) + '</span><span class="count">' + countText + '</span>';
+        testsInfoBody.appendChild(row);
+      });
+      testsInfoHeader.addEventListener('click', function() {
+        testsInfoHeader.classList.toggle('expanded');
+        testsInfoBody.classList.toggle('hidden');
+      });
+      testsInfoSection.appendChild(testsInfoHeader);
+      testsInfoSection.appendChild(testsInfoBody);
+      testsInfoContainer.appendChild(testsInfoSection);
+      var overlay = document.getElementById('test-detail-overlay');
+      var testDetailTitle = document.getElementById('test-detail-title');
+      var panelInfo = document.getElementById('panel-info');
+      var panelSteps = document.getElementById('panel-steps');
+      var panelLogs = document.getElementById('panel-logs');
+      function openTestDetail(test) {
+        var modal = document.getElementById('test-detail-modal');
+        modal.classList.remove('pass', 'fail', 'skip');
+        modal.classList.add(test.status === 'FAIL' ? 'fail' : test.status === 'SKIP' ? 'skip' : 'pass');
+        var tags = test.tags && Array.isArray(test.tags) ? test.tags : [];
+        var primaryTag = tags.filter(function(x) { return /^QATM-\d+/i.test(x); })[0] || '';
+        testDetailTitle.innerHTML = escapeHtml(test.name) + (primaryTag ? '<span class="test-detail-tag-pill">' + escapeHtml(primaryTag) + '</span>' : '');
+        panelInfo.innerHTML = '<div class="detail-row"><span class="k">Name</span><span>' + escapeHtml(test.name) + '</span></div><div class="detail-row"><span class="k">Status</span><span>' + escapeHtml(test.status) + '</span></div><div class="detail-row"><span class="k">Duration</span><span>' + (test.elapsed != null ? test.elapsed + ' s' : '–') + '</span></div><div class="detail-row"><span class="k">Suite</span><span>' + escapeHtml(test.suite || '–') + '</span></div><div class="detail-row"><span class="k">Tag</span><span>' + escapeHtml(primaryTag || '–') + '</span></div>';
+        var steps = test.steps || [];
+        if (steps.length) {
+          var flatSteps = steps.map(function(s) { return { name: s.name, status: s.status || 'UNKNOWN', elapsed: s.elapsed }; });
+          panelSteps.innerHTML = '<table><thead><tr><th>#</th><th>Keyword</th><th>Status</th><th>Time (s)</th></tr></thead><tbody>' + flatSteps.map(function(s, i) {
+            return '<tr class="step-row-clickable" data-step-index="' + i + '" role="button" tabindex="0" title="View call chain"><td>' + (i + 1) + '</td><td>' + escapeHtml(s.name) + '</td><td class="step-' + (s.status === 'PASS' ? 'pass' : s.status === 'FAIL' ? 'fail' : 'skip') + '">' + escapeHtml(s.status) + '</td><td>' + (s.elapsed != null ? s.elapsed : '–') + '</td></tr>';
+          }).join('') + '</tbody></table><div id="step-call-chain-panel" class="call-chain-panel" style="display:none;"><div class="call-chain-panel-head">Call chain: <span id="step-call-chain-title"></span></div><div class="call-chain-panel-body" id="step-call-chain-body"></div></div>';
+          var chainPanel = document.getElementById('step-call-chain-panel');
+          var chainBody = document.getElementById('step-call-chain-body');
+          function statusClass(s) { return s.status === 'PASS' ? 'pass' : s.status === 'FAIL' ? 'fail' : 'skip'; }
+          function renderChainNode(step) {
+            var statusCls = statusClass(step);
+            var elapsed = step.elapsed != null ? step.elapsed + ' s' : '–';
+            return '<div class="chain-node"><span class="chain-node-name">' + escapeHtml(step.name) + '</span><span class="chain-node-status ' + statusCls + '">' + escapeHtml(step.status) + '</span><span class="chain-node-elapsed">' + escapeHtml(elapsed) + '</span></div>';
+          }
+          function renderChainTree(step, depth) {
+            depth = depth || 0;
+            var children = step.children || [];
+            var html = '<li>' + renderChainNode(step);
+            if (children.length) {
+              html += '<ul class="call-chain-tree">' + children.map(function(c) { return renderChainTree(c, depth + 1); }).join('') + '</ul>';
+            }
+            return html + '</li>';
+          }
+          panelSteps.querySelectorAll('.step-row-clickable').forEach(function(row) {
+            function showChain() {
+              var idx = parseInt(row.getAttribute('data-step-index'), 10);
+              var step = steps[idx];
+              if (!step) return;
+              var titleEl = document.getElementById('step-call-chain-title');
+              if (titleEl) titleEl.textContent = step.name || '';
+              var children = step.children || [];
+              if (children.length === 0) {
+                chainBody.innerHTML = '<div class="call-chain-leaf-msg">No nested calls — this step is a leaf.</div>';
+              } else {
+                chainBody.innerHTML = '<ul class="call-chain-tree">' + renderChainTree(step) + '</ul>';
+              }
+              chainPanel.style.display = 'block';
+              chainPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            row.addEventListener('click', showChain);
+            row.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showChain(); } });
+          });
+        } else {
+          panelSteps.innerHTML = '<p style="color:#64748b;margin:0;">No step data for this test.</p>';
+        }
+        var logs = test.logs || [];
+        if (logs.length) {
+          panelLogs.innerHTML = logs.map(function(l) { return '<div class="log-line log-level-' + escapeHtml(l.level || 'INFO') + '">[' + escapeHtml(l.level || '') + '] ' + (l.timestamp ? escapeHtml(l.timestamp) + ' ' : '') + escapeHtml(l.message || '') + '</div>'; }).join('');
+        } else {
+          panelLogs.innerHTML = '<p style="color:#64748b;margin:0;">No log messages for this test.</p>';
+        }
+        document.querySelectorAll('.test-detail-tabs button').forEach(function(btn) { btn.classList.toggle('active', btn.getAttribute('data-panel') === 'info'); });
+        document.querySelectorAll('.test-detail-panel').forEach(function(p) { p.classList.toggle('active', p.id === 'panel-info'); });
+        overlay.classList.add('open');
+      }
+      function closeTestDetail() { overlay.classList.remove('open'); }
+      document.getElementById('test-detail-close').addEventListener('click', closeTestDetail);
+      document.querySelectorAll('.test-detail-tabs button').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var panel = this.getAttribute('data-panel');
+          document.querySelectorAll('.test-detail-tabs button').forEach(function(b) { b.classList.toggle('active', b.getAttribute('data-panel') === panel); });
+          document.querySelectorAll('.test-detail-panel').forEach(function(p) { p.classList.toggle('active', p.id === 'panel-' + panel); });
+          var chainPanel = document.getElementById('step-call-chain-panel');
+          if (chainPanel) chainPanel.style.display = 'none';
+        });
+      });
+      document.getElementById('tests-list').addEventListener('click', function(e) {
+        var item = e.target.closest('.test-item');
+        if (!item) return;
+        var name = item.dataset.name;
+        var suite = item.dataset.suite || '';
+        var test = (data.tests || []).find(function(t) { return t.name === name && (t.suite || '') === suite; });
+        if (test) openTestDetail(test);
+      });
+      document.getElementById('failures-list').addEventListener('click', function(e) {
+        var item = e.target.closest('.test-item');
+        if (!item) return;
+        var name = item.dataset.name;
+        var suite = item.dataset.suite || '';
+        var test = (data.tests || []).find(function(t) { return t.name === name && (t.suite || '') === suite; });
+        if (test) openTestDetail(test);
+      });
+      document.getElementById('passes-list').addEventListener('click', function(e) {
+        var item = e.target.closest('.test-item');
+        if (!item) return;
+        var name = item.dataset.name;
+        var suite = item.dataset.suite || '';
+        var test = (data.tests || []).find(function(t) { return t.name === name && (t.suite || '') === suite; });
+        if (test) openTestDetail(test);
+      });
+      function applySectionFilter() {
+        var checked = [];
+        document.querySelectorAll('input[name="section-filter"]:checked').forEach(function(cb) { checked.push(cb.value); });
+        var showAll = checked.length === 0;
+        document.querySelectorAll('#tests-list .suite-section').forEach(function(el) {
+          el.style.display = (showAll || checked.indexOf(el.dataset.suite) >= 0) ? '' : 'none';
+        });
+        var passesContainer = document.getElementById('passes-list');
+        if (passesContainer) passesContainer.style.display = (showAll || checked.indexOf('Passes') >= 0) ? '' : 'none';
+        var failuresContainer = document.getElementById('failures-list');
+        if (failuresContainer) failuresContainer.style.display = (showAll || checked.indexOf('Failures') >= 0) ? '' : 'none';
+      }
+      document.querySelectorAll('input[name="section-filter"]').forEach(function(cb) {
+        cb.addEventListener('change', applySearchAndSectionFilter);
+      });
+      document.getElementById('filters-btn').addEventListener('click', function() {
+        this.classList.toggle('open');
+        this.setAttribute('aria-expanded', this.classList.contains('open'));
+        document.getElementById('filters-dropdown').classList.toggle('open', this.classList.contains('open'));
+      });
+      document.addEventListener('click', function(e) {
+        if (!document.getElementById('filters-dropdown').contains(e.target) && !document.getElementById('filters-btn').contains(e.target)) {
+          document.getElementById('filters-btn').classList.remove('open');
+          document.getElementById('filters-dropdown').classList.remove('open');
+        }
+      });
+      function applySearchAndSectionFilter() {
+        var sidebarEl = document.getElementById('sidebar-search');
+        var searchEl = document.getElementById('search');
+        var tagEl = document.getElementById('tag-filter');
+        var q = (sidebarEl && sidebarEl.value.trim().toLowerCase()) || '';
+        var headerQ = (searchEl && searchEl.value.trim().toLowerCase()) || '';
+        var tagQ = (tagEl && tagEl.value.trim().toLowerCase()) || '';
+        var checked = [];
+        document.querySelectorAll('input[name="section-filter"]:checked').forEach(function(cb) { checked.push(cb.value); });
+        var showAllSections = checked.length === 0;
+        var sectionMatchesSearch = function(name) { return q === '' || name.toLowerCase() === q; };
+        document.querySelectorAll('#tests-list .suite-section').forEach(function(el) {
+          var suite = el.dataset.suite;
+          var showSection = (showAllSections || checked.indexOf(suite) >= 0) && sectionMatchesSearch(suite);
+          el.style.display = showSection ? '' : 'none';
+        });
+        var passesContainer = document.getElementById('passes-list');
+        if (passesContainer) {
+          var showPasses = (showAllSections || checked.indexOf('Passes') >= 0);
+          passesContainer.style.display = showPasses ? '' : 'none';
+        }
+        var failuresContainer = document.getElementById('failures-list');
+        if (failuresContainer) {
+          var showFailures = (showAllSections || checked.indexOf('Failures') >= 0);
+          failuresContainer.style.display = showFailures ? '' : 'none';
+        }
+        document.querySelectorAll('#tests-list .test-item, #passes-list .test-item, #failures-list .test-item').forEach(function(el) {
+          var name = (el.dataset.name || '').toLowerCase();
+          var headerNameMatch = headerQ === '' || name.indexOf(headerQ) >= 0;
+          var tags = (el.dataset.tags || '').toLowerCase();
+          var tagMatch = tagQ === '' || (tags && tags.indexOf(tagQ) >= 0);
+          el.style.display = (headerNameMatch && tagMatch) ? '' : 'none';
+        });
+        var hasActiveFilter = (q || headerQ || tagQ) !== '';
+        document.querySelectorAll('#tests-list .suite-section').forEach(function(sectionEl) {
+          var body = sectionEl.querySelector('.suite-section-tests');
+          var header = sectionEl.querySelector('.suite-section-header');
+          if (!body || !header) return;
+          var visibleCount = 0;
+          sectionEl.querySelectorAll('.test-item').forEach(function(item) { if (item.style.display !== 'none') visibleCount++; });
+          if (hasActiveFilter) {
+            if (visibleCount > 0) { body.classList.remove('hidden'); header.classList.add('expanded'); }
+            else { body.classList.add('hidden'); header.classList.remove('expanded'); }
+          } else {
+            body.classList.add('hidden');
+            header.classList.remove('expanded');
+          }
+        });
+        var passSections = document.querySelectorAll('#passes-list .suite-section');
+        passSections.forEach(function(passSection) {
+          if (!hasActiveFilter) return;
+          var passBody = passSection.querySelector('.suite-section-tests');
+          var passHeader = passSection.querySelector('.passes-section-header');
+          if (!passBody || !passHeader) return;
+          var passVisible = 0;
+          passSection.querySelectorAll('.test-item').forEach(function(item) { if (item.style.display !== 'none') passVisible++; });
+          var expandPasses = (q === '' || q === 'passes');
+          if (passVisible > 0 && expandPasses) { passBody.classList.remove('hidden'); passHeader.classList.add('expanded'); }
+          else { passBody.classList.add('hidden'); passHeader.classList.remove('expanded'); }
+        });
+        var failSection = document.querySelector('#failures-list .suite-section');
+        if (failSection && hasActiveFilter) {
+          var failBody = failSection.querySelector('.suite-section-tests');
+          var failHeader = failSection.querySelector('.failures-section-header');
+          if (failBody && failHeader) {
+            var failVisible = 0;
+            failSection.querySelectorAll('.test-item').forEach(function(item) { if (item.style.display !== 'none') failVisible++; });
+            var expandFailures = (q === '' || q === 'failures');
+            if (failVisible > 0 && expandFailures) { failBody.classList.remove('hidden'); failHeader.classList.add('expanded'); }
+            else { failBody.classList.add('hidden'); failHeader.classList.remove('expanded'); }
+          }
+        }
+      }
+      var sidebarEl = document.getElementById('sidebar-search');
+      var searchEl = document.getElementById('search');
+      var tagEl = document.getElementById('tag-filter');
+      if (sidebarEl) sidebarEl.addEventListener('input', applySearchAndSectionFilter);
+      if (searchEl) searchEl.addEventListener('input', applySearchAndSectionFilter);
+      if (tagEl) tagEl.addEventListener('input', applySearchAndSectionFilter);
+      applySearchAndSectionFilter();
+      var statusTotal = pass + fail + skip;
+      new Chart(document.getElementById('chart-status'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Pass', 'Fail', 'Skip'],
+          datasets: [{
+            data: [pass, fail, skip],
+            backgroundColor: ['rgba(5, 150, 105, 0.65)', 'rgba(220, 38, 38, 0.6)', 'rgba(221, 163, 46, 0.6)'],
+            borderWidth: 2,
+            borderColor: ['#059669', '#dc2626', '#DDA32E'],
+            hoverBorderWidth: 3,
+            hoverOffset: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          cutout: '52%',
+          layout: { padding: 8 },
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                usePointStyle: true,
+                pointStyle: 'circle',
+                boxWidth: 8,
+                boxHeight: 8,
+                padding: 18,
+                font: { size: 13, weight: '600' },
+                color: '#1e3a5f',
+                generateLabels: function(chart) {
+                  var data = chart.data;
+                  var total = statusTotal || 1;
+                  return (data.labels || []).map(function(label, i) {
+                    var value = (data.datasets[0] && data.datasets[0].data[i]) || 0;
+                    var pct = ((value / total) * 100).toFixed(1);
+                    return { text: label + ' (' + pct + '%)', fillStyle: data.datasets[0].backgroundColor[i], hidden: false, index: i, pointStyle: 'circle' };
+                  });
+                }
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(30, 41, 59, 0.96)',
+              titleFont: { size: 13, weight: '600' },
+              bodyFont: { size: 12 },
+              padding: 14,
+              cornerRadius: 10,
+              displayColors: true,
+              callbacks: {
+                label: function(context) {
+                  var value = context.raw;
+                  var pct = statusTotal ? ((value / statusTotal) * 100).toFixed(1) : '0';
+                  return context.label + ': ' + value + ' (' + pct + '%)';
+                }
+              }
+            },
+            datalabels: {
+              formatter: function(value) {
+                if (value === 0) return '';
+                var pct = statusTotal ? ((value / statusTotal) * 100).toFixed(1) : '0';
+                return pct + '%';
+              },
+              anchor: 'center',
+              align: 'center',
+              color: function(context) {
+                var i = context.dataIndex;
+                return i === 0 ? '#065f46' : i === 1 ? '#991b1b' : '#b45309';
+              },
+              font: function(context) {
+                var value = context.dataset.data[context.dataIndex];
+                var total = context.dataset.data.reduce(function(a, b) { return a + b; }, 0);
+                var pct = total ? (value / total) * 100 : 0;
+                var size = pct >= 50 ? 18 : pct >= 20 ? 15 : pct >= 10 ? 13 : 11;
+                return { size: size, weight: 'bold' };
+              },
+              padding: 4,
+              textShadowBlur: 4,
+              textShadowColor: 'rgba(0,0,0,0.2)'
+            }
+          }
+        }
+      });
+      const bySuiteFiltered = (data.bySuite || []).filter(function(s) {
+        var short = (s.name || '').replace(/^Mobile Testcases\.?/, '').trim();
+        return short.length > 0;
+      });
+      const suiteNames = bySuiteFiltered.map(function(s) {
+        return (s.name || '').replace(/^Mobile Testcases\.?/, '').trim();
+      });
+      const suiteCounts = bySuiteFiltered.map(function(s) { return s.pass + s.fail + s.skip; });
+      var suiteTotal = suiteCounts.reduce(function(a, b) { return a + b; }, 0);
+      const colors = ['#1d4ed8', '#3b82f6', '#93c5fd', '#bfdbfe'];
+      new Chart(document.getElementById('chart-suite'), {
+        type: 'doughnut',
+        data: {
+          labels: suiteNames,
+          datasets: [{
+            data: suiteCounts,
+            backgroundColor: suiteNames.map(function(_, i) { return colors[i % colors.length]; }),
+            borderWidth: 2,
+            borderColor: '#ffffff',
+            hoverBorderWidth: 3,
+            hoverOffset: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          cutout: '52%',
+          layout: { padding: 8 },
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                usePointStyle: true,
+                pointStyle: 'circle',
+                boxWidth: 8,
+                boxHeight: 8,
+                padding: 18,
+                font: { size: 13, weight: '600' },
+                color: '#1e3a5f',
+                generateLabels: function(chart) {
+                  var data = chart.data;
+                  var total = suiteTotal || 1;
+                  return (data.labels || []).map(function(label, i) {
+                    var value = (data.datasets[0] && data.datasets[0].data[i]) || 0;
+                    var pct = ((value / total) * 100).toFixed(1);
+                    return { text: label + ' (' + pct + '%)', fillStyle: data.datasets[0].backgroundColor[i], hidden: false, index: i, pointStyle: 'circle' };
+                  });
+                }
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(30, 41, 59, 0.96)',
+              titleFont: { size: 13, weight: '600' },
+              bodyFont: { size: 12 },
+              padding: 14,
+              cornerRadius: 10,
+              displayColors: true,
+              callbacks: {
+                label: function(context) {
+                  var value = context.raw;
+                  var pct = suiteTotal ? ((value / suiteTotal) * 100).toFixed(1) : '0';
+                  return context.label + ': ' + value + ' (' + pct + '%)';
+                }
+              }
+            },
+            datalabels: {
+              formatter: function(value) {
+                var pct = suiteTotal ? ((value / suiteTotal) * 100).toFixed(1) : '0';
+                return pct + '%';
+              },
+              anchor: 'center',
+              align: 'center',
+              color: '#fff',
+              font: function(context) {
+                var value = context.dataset.data[context.dataIndex];
+                var total = context.dataset.data.reduce(function(a, b) { return a + b; }, 0);
+                var pct = total ? (value / total) * 100 : 0;
+                var size = pct >= 50 ? 18 : pct >= 20 ? 15 : pct >= 10 ? 13 : 11;
+                return { size: size, weight: 'bold' };
+              },
+              padding: 4,
+              textShadowBlur: 4,
+              textShadowColor: 'rgba(0,0,0,0.2)'
+            }
+          }
+        }
+      });
+      var runHistory = data.runHistory || [];
+      var MAX_DISPLAY_RUNS = 20;
+      var subEl = document.getElementById('history-chart-subtitle');
+      if (runHistory.length > MAX_DISPLAY_RUNS && subEl) {
+        subEl.textContent = 'Showing last ' + MAX_DISPLAY_RUNS + ' of ' + runHistory.length + ' runs';
+      }
+      if (runHistory.length > 0) {
+        var displayHistory = runHistory.slice(-MAX_DISPLAY_RUNS);
+        var historyLabels = displayHistory.map(function(r) { return r.lastRun || ''; });
+        function historyGradient(colorStops) {
+          return function(context) {
+            var chart = context.chart;
+            var ctx = chart.ctx;
+            var top = chart.scales.y?.top ?? 0;
+            var bottom = chart.scales.y?.bottom ?? chart.height;
+            var gradient = ctx.createLinearGradient(0, top, 0, bottom);
+            colorStops.forEach(function(s) { gradient.addColorStop(s[0], s[1]); });
+            return gradient;
+          };
+        }
+        new Chart(document.getElementById('chart-history'), {
+          type: 'line',
+          data: {
+            labels: historyLabels,
+            datasets: [
+              { label: 'Skipped', data: displayHistory.map(function(r) { return r.skip || 0; }), borderColor: '#DDA32E', borderWidth: 2, backgroundColor: historyGradient([[0, 'rgba(221, 163, 46, 0.55)'], [1, 'rgba(221, 163, 46, 0.08)']]), fill: true, tension: 0.35, pointBackgroundColor: '#DDA32E', pointRadius: 3, pointHoverRadius: 5, order: 3 },
+              { label: 'Passed', data: displayHistory.map(function(r) { return r.pass || 0; }), borderColor: '#059669', borderWidth: 2, backgroundColor: historyGradient([[0, 'rgba(5, 150, 105, 0.6)'], [1, 'rgba(5, 150, 105, 0.06)']]), fill: true, tension: 0.35, pointBackgroundColor: '#059669', pointRadius: 3, pointHoverRadius: 5, order: 2 },
+              { label: 'Failed', data: displayHistory.map(function(r) { return r.fail || 0; }), borderColor: '#dc2626', borderWidth: 2, backgroundColor: historyGradient([[0, 'rgba(220, 38, 38, 0.55)'], [1, 'rgba(220, 38, 38, 0.08)']]), fill: true, tension: 0.35, pointBackgroundColor: '#dc2626', pointRadius: 3, pointHoverRadius: 5, order: 1 }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: { padding: { top: 36, right: 20, bottom: 12, left: 8 } },
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+              x: {
+                stacked: true,
+                grid: { display: false },
+                ticks: { maxRotation: 40, minRotation: 30, maxTicksLimit: 8, font: { size: 11 }, color: '#64748b' }
+              },
+              y: {
+                stacked: true,
+                beginAtZero: true,
+                grid: { color: 'rgba(59, 130, 246, 0.06)' },
+                border: { display: false },
+                ticks: { stepSize: 1, font: { size: 11 }, color: '#64748b', padding: 8 }
+              }
+            },
+            plugins: {
+              datalabels: {
+                anchor: 'center',
+                align: function(context) {
+                  var chart = context.chart;
+                  var scale = chart.scales.y;
+                  if (!scale || scale.max === scale.min) return 'top';
+                  var value = context.dataset.data[context.dataIndex];
+                  var pct = (value - scale.min) / (scale.max - scale.min);
+                  return pct >= 0.75 ? 'bottom' : 'top';
+                },
+                offset: 8,
+                color: '#1e293b',
+                font: { size: 11, weight: '600' },
+                formatter: function(value) { return value === 0 ? null : value; }
+              },
+              legend: {
+                position: 'bottom',
+                labels: {
+                  usePointStyle: true,
+                  pointStyle: 'circle',
+                  padding: 16,
+                  font: { size: 12, weight: '600' },
+                  color: '#1e3a5f'
+                }
+              },
+              tooltip: {
+                backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                titleFont: { size: 12, weight: '600' },
+                bodyFont: { size: 12 },
+                padding: 12,
+                cornerRadius: 8,
+                displayColors: true
+              }
+            }
+          }
+        });
+      } else {
+        document.querySelector('.history-chart-wrap').innerHTML = '<p style="margin:0;color:#64748b;font-size:13px;line-height:1.5;padding:24px 0;">Run tests and generate the report a few times to see stability over runs.</p>';
+      }
+      function escapeHtml(s) {
+        const div = document.createElement('div');
+        div.textContent = s;
+        return div.innerHTML;
+      }
+    })();
+  </script>
+</body>
+</html>
