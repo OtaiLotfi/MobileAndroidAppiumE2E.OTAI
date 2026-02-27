@@ -37,6 +37,9 @@ ui_dump.xml
 dashboard/report_data.json
 dashboard/run_history.json
 
+# Architecture diagram
+architecture-diagram.svg
+
 # OS
 Thumbs.db
 .DS_Store
